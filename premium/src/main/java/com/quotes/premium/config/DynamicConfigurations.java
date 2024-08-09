@@ -1,5 +1,7 @@
 package com.quotes.premium.config;
 
+import com.quotes.premium.reader.FutureReadyConf;
+
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -31,8 +33,6 @@ public class DynamicConfigurations {
             "10000000", 16d
     );
 
-    private static final Map<String, Double> futureReadyConf = new HashMap<>();
-
     public static Map<String,Double> getPowerBoosterConfig(){
         return DynamicConfigurations.powerBoosterConfig;
     }
@@ -45,10 +45,7 @@ public class DynamicConfigurations {
         return DynamicConfigurations.infiniteCareConfig;
     }
 
-    public static Double getFutureReadyConf(final String age){
-        if(DynamicConfigurations.futureReadyConf.isEmpty()){
-
-        }
-        return DynamicConfigurations.futureReadyConf.get(age);
+    public static Double getFutureReadyConf(final int age){
+        return FutureReadyConf.get(age);
     }
 }
