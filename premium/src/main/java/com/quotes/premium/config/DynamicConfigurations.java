@@ -1,10 +1,11 @@
 package com.quotes.premium.config;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class StaticConfigurations {
+public class DynamicConfigurations {
 
     private static final Map<String, Double> powerBoosterConfig = Map.of(
             "500000", 15.0d,
@@ -30,16 +31,24 @@ public class StaticConfigurations {
             "10000000", 16d
     );
 
+    private static final Map<String, Double> futureReadyConf = new HashMap<>();
+
     public static Map<String,Double> getPowerBoosterConfig(){
-        return StaticConfigurations.powerBoosterConfig;
+        return DynamicConfigurations.powerBoosterConfig;
     }
 
     public static List<String> getCopayAllowedValues(){
-        return StaticConfigurations.copayAllowedValues;
+        return DynamicConfigurations.copayAllowedValues;
     }
 
     public static Map<String,Double> getInfiniteCareConfig(){
-        return StaticConfigurations.infiniteCareConfig;
+        return DynamicConfigurations.infiniteCareConfig;
     }
 
+    public static Double getFutureReadyConf(final String age){
+        if(DynamicConfigurations.futureReadyConf.isEmpty()){
+
+        }
+        return DynamicConfigurations.futureReadyConf.get(age);
+    }
 }

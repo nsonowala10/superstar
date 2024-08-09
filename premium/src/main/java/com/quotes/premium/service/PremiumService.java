@@ -1,7 +1,7 @@
 package com.quotes.premium.service;
 
 import com.quotes.premium.config.BasePremiumConfig;
-import com.quotes.premium.config.StaticConfigurations;
+import com.quotes.premium.config.DynamicConfigurations;
 import com.quotes.premium.dto.AmountDivision;
 import com.quotes.premium.dto.Insured;
 import com.quotes.premium.dto.PremiumRequest;
@@ -24,14 +24,14 @@ public class PremiumService {
         this.validationService.validatePremiumRequest(premiumRequest);
         final AmountDivision amountDivision = new AmountDivision();
         this.getBasePremium(amountDivision, premiumRequest);
-        amountDivision.setPowerBoosterLoading(premiumRequest.getSumInsured(),premiumRequest.isPowerBooster(), StaticConfigurations.getPowerBoosterConfig());
+        amountDivision.setPowerBoosterLoading(premiumRequest.getSumInsured(),premiumRequest.isPowerBooster(), DynamicConfigurations.getPowerBoosterConfig());
         amountDivision.setConsumableCoverLoading(premiumRequest.isConsumableCover());
         amountDivision.setFutureReadyLoading(premiumRequest.isFutureReady(), premiumRequest.getInsured());
         amountDivision.setSpecificDiseaseLoading(premiumRequest.isReductionOnSpecificDisease(),premiumRequest.getInsured());
         amountDivision.setPedWaitingPeriodLoading(premiumRequest.isReductionOfPed(),premiumRequest.getInsured());
-        amountDivision.setInfiniteCareLoading(premiumRequest.getSumInsured(), StaticConfigurations.getInfiniteCareConfig());
+        amountDivision.setInfiniteCareLoading(premiumRequest.getSumInsured(), DynamicConfigurations.getInfiniteCareConfig());
         amountDivision.setPreferredHospitalDiscount(premiumRequest.isPreferredHospital());
-        amountDivision.setCopayDiscount(premiumRequest.getVoluntarilyCopay(), StaticConfigurations.getCopayAllowedValues());
+        amountDivision.setCopayDiscount(premiumRequest.getVoluntarilyCopay(), DynamicConfigurations.getCopayAllowedValues());
         // not changing this as it has a complex logic
         DiscountByVoluntarilyDeductible.calculateDiscount(amountDivision, premiumRequest.getVoluntarilyDeductible(), premiumRequest.getInsured());
         amountDivision.setSharedRoomDiscount(premiumRequest.isSharedRoom());
