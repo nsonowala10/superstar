@@ -134,8 +134,8 @@ public class AmountDivision implements Serializable {
         }
     }
 
-    public void setInfiniteCareLoading(final String sumInsured, final Map<String, Double> loadingMap) {
-        this.setInfiniteCareLoading(this.basePremium * loadingMap.getOrDefault(sumInsured, 0.0d) / 100.0d);
+    public void setInfiniteCareLoading(final String sumInsured, final Double toApply) {
+        this.setInfiniteCareLoading(this.basePremium *toApply);
         this.operateOnFinalPremium("loading", this.infiniteCareLoading);
     }
 

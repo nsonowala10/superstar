@@ -19,6 +19,8 @@ public class PremiumService {
     private BasePremiumConfig premiumConfig;
     @Autowired
     private ValidationService validationService;
+    @Autowired
+    private DynamicConfigurations dynamicConfigurations;
 
     public AmountDivision calculatePremium(final PremiumRequest premiumRequest) throws Exception {
         this.validationService.validatePremiumRequest(premiumRequest);
@@ -29,7 +31,7 @@ public class PremiumService {
         amountDivision.setFutureReadyLoading(premiumRequest.isFutureReady(), premiumRequest.getInsured());
         amountDivision.setSpecificDiseaseLoading(premiumRequest.isReductionOnSpecificDisease(),premiumRequest.getInsured());
         amountDivision.setPedWaitingPeriodLoading(premiumRequest.isReductionOfPed(),premiumRequest.getInsured());
-        amountDivision.setInfiniteCareLoading(premiumRequest.getSumInsured(), DynamicConfigurations.getInfiniteCareConfig());
+        amountDivision.setInfiniteCareLoading(premiumRequest.getSumInsured(), Double.valueOf(dynamicConfigurations.getInfiniteCare(premiumRequest.getSumInsured())));
         amountDivision.setPreferredHospitalDiscount(premiumRequest.isPreferredHospital());
         amountDivision.setCopayDiscount(premiumRequest.getVoluntarilyCopay(), DynamicConfigurations.getCopayAllowedValues());
         // not changing this as it has a complex logic

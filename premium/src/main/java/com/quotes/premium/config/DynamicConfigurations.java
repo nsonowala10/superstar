@@ -1,13 +1,24 @@
 package com.quotes.premium.config;
 
 import com.quotes.premium.reader.FutureReadyConf;
+import com.quotes.premium.reader.InfiniteCareConf;
+import com.quotes.premium.reader.PowerBoosterConf;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Configuration;
 
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@Configuration
 public class DynamicConfigurations {
+
+    @Autowired
+    private InfiniteCareConf infiniteCareConf;
+    @Autowired
+    private PowerBoosterConf powerBoosterConf;
 
     private static final Map<String, Double> powerBoosterConfig = Map.of(
             "500000", 15.0d,
@@ -22,16 +33,14 @@ public class DynamicConfigurations {
     );
 
     private static final List<String> copayAllowedValues = Arrays.asList("10", "20", "30", "40", "50");
-    private static final Map<String, Double> infiniteCareConfig = Map.of(
-            "500000", 30d,
-            "750000", 28d,
-            "1000000", 26d,
-            "1500000", 24d,
-            "2000000", 22d,
-            "2500000", 20d,
-            "5000000", 18d,
-            "10000000", 16d
-    );
+
+    public String getInfiniteCare(final String amount){
+        return this.infiniteCareConf.infiniteCare(amount);
+    }
+
+    public String getPowerBooster(final String amount){
+        return this.powerBoosterConf.powerBooster(amount);
+    }
 
     public static Map<String,Double> getPowerBoosterConfig(){
         return DynamicConfigurations.powerBoosterConfig;
@@ -39,13 +48,5 @@ public class DynamicConfigurations {
 
     public static List<String> getCopayAllowedValues(){
         return DynamicConfigurations.copayAllowedValues;
-    }
-
-    public static Map<String,Double> getInfiniteCareConfig(){
-        return DynamicConfigurations.infiniteCareConfig;
-    }
-
-    public static Double getFutureReadyConf(final int age){
-        return FutureReadyConf.get(age);
     }
 }
