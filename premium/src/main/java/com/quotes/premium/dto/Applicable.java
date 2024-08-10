@@ -10,7 +10,7 @@ import java.util.List;
 @Getter
 @Setter
 @ToString
-public class Applicables {
+public class Applicable {
 
     private Double basePremium;
     private Double zoneDiscount = 0.0d;

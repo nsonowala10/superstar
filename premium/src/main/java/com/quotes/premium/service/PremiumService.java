@@ -1,5 +1,6 @@
 package com.quotes.premium.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.quotes.premium.config.BasePremiumConfig;
 import com.quotes.premium.config.DynamicConfigurations;
 import com.quotes.premium.config.MandatoryConfiguration;
@@ -38,22 +39,22 @@ public class PremiumService {
 
         for(int year =1;year <= premiumRequest.getPolicyTerm();year ++){
             for(final Insured insured : premiumRequest.getInsured()){
-                final Applicables applicables = new Applicables();
-                applicables.setAge(insured.getAge());
-                applicables.setType(insured.getType());
-                applicables.setYear(year);
-                applicables.setPeds(insured.getPeds());
-                applicables.setNri(insured.isNri());
-                applicables.setProposer(insured.isProposer());
-                applicables.setReflexLoadingPercentage(insured.getReflexLoading()); // TODO remove it
-                amountDivision.getApplicables().add(applicables);
+                final Applicable applicable = new Applicable();
+                applicable.setAge(insured.getAge());
+                applicable.setType(insured.getType());
+                applicable.setYear(year);
+                applicable.setPeds(insured.getPeds());
+                applicable.setNri(insured.isNri());
+                applicable.setProposer(insured.isProposer());
+                applicable.setReflexLoadingPercentage(insured.getReflexLoading()); // TODO remove it
+                amountDivision.getApplicables().add(applicable);
             }
         }
     }
 
     private void stage5(final AmountDivision amountDivision) {
         double finalPremium = 0.0;
-        for(final Applicables app : amountDivision.getApplicables()){
+        for(final Applicable app : amountDivision.getApplicables()){
             finalPremium = finalPremium + app.getStageIVSum();
         }
         amountDivision.setFinalPremium(finalPremium);
@@ -61,7 +62,7 @@ public class PremiumService {
 
     private void stage4(final AmountDivision amountDivision) {
         this.longTermDiscount(amountDivision);
-        amountDivision.getApplicables().forEach(Applicables::prepareStageIVSum);
+        amountDivision.getApplicables().forEach(Applicable::prepareStageIVSum);
     }
 
     private void longTermDiscount(final AmountDivision amountDivision) {
@@ -75,7 +76,7 @@ public class PremiumService {
         this.healthQuestionnaire(amountDivision, premiumRequest);
         this.cibilDiscount(amountDivision, premiumRequest);
         this.earlyRenewalDiscount(amountDivision, premiumRequest);
-        amountDivision.getApplicables().forEach(Applicables::prepareStageIIISum);
+        amountDivision.getApplicables().forEach(Applicable::prepareStageIIISum);
 
         /* TODO capping */
     }
@@ -85,7 +86,7 @@ public class PremiumService {
             return ;
         }
 
-        final List<Applicables> ls = this.determineConfiguration("earlyRenewal",amountDivision, premiumRequest.getPolicyType());
+        final List<Applicable> ls = this.determineConfiguration("earlyRenewal",amountDivision, premiumRequest.getPolicyType());
         ls.forEach(app -> app.setEarlyRenewalDiscount(app.getEarlyRenewalDiscount() + app.getStageIISum()*0.025d));
     }
 
@@ -109,7 +110,7 @@ public class PremiumService {
         } else {
             discount = 0.0d;
         }
-        final List<Applicables> ls = this.determineConfiguration("cibilDiscount",amountDivision, premiumRequest.getPolicyType());
+        final List<Applicable> ls = this.determineConfiguration("cibilDiscount",amountDivision, premiumRequest.getPolicyType());
         ls.forEach(app -> app.setCibilDiscount(app.getCibilDiscount() + app.getStageIISum()*discount));
     }
 
@@ -117,7 +118,7 @@ public class PremiumService {
         if(!premiumRequest.isHealthQuestionnaire()){
             return ;
         }
-        final List<Applicables> ls = this.determineConfiguration("healthQuestionnaire",amountDivision, premiumRequest.getPolicyType());
+        final List<Applicable> ls = this.determineConfiguration("healthQuestionnaire",amountDivision, premiumRequest.getPolicyType());
         ls.forEach(app -> app.setHealthQuestionnaireDiscount(app.getHealthQuestionnaireDiscount() + app.getStageIISum()*0.1d));
     }
 
@@ -145,7 +146,7 @@ public class PremiumService {
         this.compassionateVisit(amountDivision, premiumRequest);
         this.hospitalCash(amountDivision, premiumRequest);
         this.paCover(amountDivision, premiumRequest);
-        amountDivision.getApplicables().forEach(Applicables::prepareStageIISum);
+        amountDivision.getApplicables().forEach(Applicable::prepareStageIISum);
         return ;
     }
 
@@ -154,7 +155,7 @@ public class PremiumService {
             return ;
         }
 
-        final List<Applicables> ls = this.determineConfiguration("paCover",amountDivision, premiumRequest.getPolicyType());
+        final List<Applicable> ls = this.determineConfiguration("paCover",amountDivision, premiumRequest.getPolicyType());
         final String option = premiumRequest.getPaCoverRequest().getOption();
         final Double perMile = "1".equals(option) ? 1.0d : 2.0d;
         final Double sumInsured = Double.valueOf(premiumRequest.getSumInsured());
@@ -175,7 +176,7 @@ public class PremiumService {
             return ;
         }
 
-        final List<Applicables> ls = this.determineConfiguration("hospitalCash",amountDivision, premiumRequest.getPolicyType());
+        final List<Applicable> ls = this.determineConfiguration("hospitalCash",amountDivision, premiumRequest.getPolicyType());
         ls.forEach(app -> {
             final Double expense = DynamicConfigurations.getHospitalCash(premiumRequest.getPolicyType(), app.getAge(), premiumRequest.getHospitalCashRequest().getNumberOfDays());
             app.setHospitalCashExpense(app.getHospitalCashExpense() + expense);
@@ -187,7 +188,7 @@ public class PremiumService {
             return ;
         }
 
-        final List<Applicables> ls =  this.determineConfiguration("CompassionateVisit",amountDivision, premiumRequest.getPolicyType());
+        final List<Applicable> ls =  this.determineConfiguration("CompassionateVisit",amountDivision, premiumRequest.getPolicyType());
         final Double expense = "floater".equals(premiumRequest.getPolicyType())? 100.0d : 50.0d;
         ls.forEach(app -> app.setCompassionateVisitExpense(app.getCompassionateVisitExpense() + expense));
     }
@@ -197,7 +198,7 @@ public class PremiumService {
             return ;
         }
 
-        final List<Applicables> ls = this.determineConfiguration("internationalSecondOpinion",amountDivision, premiumRequest.getPolicyType());
+        final List<Applicable> ls = this.determineConfiguration("internationalSecondOpinion",amountDivision, premiumRequest.getPolicyType());
         final Double expense = "floater".equals(premiumRequest.getPolicyType())? 20.0d : 15.0d;
         ls.forEach(app -> app.setInternationalSecondOpinionExpense(app.getInternationalSecondOpinionExpense() + expense));
     }
@@ -207,7 +208,7 @@ public class PremiumService {
             return ;
         }
 
-        final List<Applicables> ls = this.determineConfiguration("annualHealthCheckUp",amountDivision, premiumRequest.getPolicyType());
+        final List<Applicable> ls = this.determineConfiguration("annualHealthCheckUp",amountDivision, premiumRequest.getPolicyType());
         final Double expense = DynamicConfigurations.getAnnualCheckUp(premiumRequest.getPolicyType(),premiumRequest.getSumInsured());
         ls.forEach(app -> app.setAnnualHealthCheckUpExpense(app.getAnnualHealthCheckUpExpense() + expense));
     }
@@ -217,7 +218,7 @@ public class PremiumService {
             return ;
         }
 
-        final List<Applicables> ls = this.determineConfiguration("highEndDiagnostic",amountDivision, premiumRequest.getPolicyType());
+        final List<Applicable> ls = this.determineConfiguration("highEndDiagnostic",amountDivision, premiumRequest.getPolicyType());
         final Double amount = "floater".equals(premiumRequest.getPolicyType()) ? 1000.0d : 750.0d ;
         ls.forEach(app -> app.setHighEndDiagnosticExpense(app.getHighEndDiagnosticExpense() + amount));
     }
@@ -227,7 +228,7 @@ public class PremiumService {
             return ;
         }
 
-        final List<Applicables> ls = this.determineConfiguration("womenCare",amountDivision, premiumRequest.getPolicyType());
+        final List<Applicable> ls = this.determineConfiguration("womenCare",amountDivision, premiumRequest.getPolicyType());
         final double sumInsured = Double.parseDouble(premiumRequest.getSumInsured());
         double expense = 0.0d;
         if(2500000.0d >= sumInsured){
@@ -245,7 +246,7 @@ public class PremiumService {
             return ;
         }
 
-        final List<Applicables> ls = this.determineConfiguration("maternityExpense",amountDivision, premiumRequest.getPolicyType());
+        final List<Applicable> ls = this.determineConfiguration("maternityExpense",amountDivision, premiumRequest.getPolicyType());
         final List<MaternityOptions> maternityOptions = premiumRequest.getMaternityRequest().getOption();
         final Double sumInsured = Double.valueOf(premiumRequest.getSumInsured());
         ls.forEach(app -> {
@@ -254,7 +255,7 @@ public class PremiumService {
 
     }
 
-    private static void applyMaterityExpense(final List<MaternityOptions> maternityOptions, final Double sumInsured, final Applicables applicable) {
+    private static void applyMaterityExpense(final List<MaternityOptions> maternityOptions, final Double sumInsured, final Applicable applicable) {
         for(final MaternityOptions option : maternityOptions){
             Double maternityAmount = 0.0d;
             Double newBornAmount = 0.0d;
@@ -316,8 +317,8 @@ public class PremiumService {
 
     private void nriDiscount(final AmountDivision amountDivision, final PremiumRequest premiumRequest) {
 
-        final List<Applicables> ls = this.determineConfiguration("wellnessDiscount",amountDivision, premiumRequest.getPolicyType());
-        for(final Applicables app : ls){
+        final List<Applicable> ls = this.determineConfiguration("wellnessDiscount",amountDivision, premiumRequest.getPolicyType());
+        for(final Applicable app : ls){
             if(!app.isNri()){
                 return ;
             }
@@ -333,7 +334,7 @@ public class PremiumService {
             return ;
         }
 
-        final List<Applicables> ls = this.determineConfiguration("wellnessDiscount",amountDivision, premiumRequest.getPolicyType());
+        final List<Applicable> ls = this.determineConfiguration("wellnessDiscount",amountDivision, premiumRequest.getPolicyType());
         final Double discount;
         final Double points = premiumRequest.getWellnessDiscount().getPoints();
         if(751 <= points){
@@ -367,7 +368,7 @@ public class PremiumService {
             return ;
         }
 
-        final List<Applicables> ls = this.determineConfiguration("medicalEquipmentCover",amountDivision, premiumRequest.getPolicyType());
+        final List<Applicable> ls = this.determineConfiguration("medicalEquipmentCover",amountDivision, premiumRequest.getPolicyType());
         ls.forEach(app->{
             app.setDurableMedicalEquipmentCoverLoading(app.getBasePremium() * 0.1d);
         });
@@ -379,7 +380,7 @@ public class PremiumService {
             return ;
         }
 
-        final List<Applicables> ls = this.determineConfiguration("subLimitModeration",amountDivision, premiumRequest.getPolicyType());
+        final List<Applicable> ls = this.determineConfiguration("subLimitModeration",amountDivision, premiumRequest.getPolicyType());
         ls.forEach(app->{
             app.setSubLimitForModernTreatmentsDiscount(app.getBasePremium() * 0.05d);
         });
@@ -391,7 +392,7 @@ public class PremiumService {
             return ;
         }
 
-        final List<Applicables> ls = this.determineConfiguration("roomRent",amountDivision, premiumRequest.getPolicyType());
+        final List<Applicable> ls = this.determineConfiguration("roomRent",amountDivision, premiumRequest.getPolicyType());
         final String option =  premiumRequest.getRoomRent().getOption();
         final double discount = "general".equals(option)?0.20d:("shared".equals(option)?0.10d:0.05d);
         ls.forEach(app->{
@@ -404,7 +405,7 @@ public class PremiumService {
             return ;
         }
 
-        final List<Applicables> ls = this.determineConfiguration("deductible",amountDivision, premiumRequest.getPolicyType());
+        final List<Applicable> ls = this.determineConfiguration("deductible",amountDivision, premiumRequest.getPolicyType());
         ls.forEach(app->{
             app.setDeductibleDiscount(app.getBasePremium()*DynamicConfigurations.getVoluntaryDeductiblePercent(app.getAge(), Integer.parseInt(premiumRequest.getVoluntarilyDeductible().getDeductibleAmount())));
         });
@@ -418,7 +419,7 @@ public class PremiumService {
             return ;
         }
 
-        final List<Applicables> ls = this.determineConfiguration("copay",amountDivision, premiumRequest.getPolicyType());
+        final List<Applicable> ls = this.determineConfiguration("copay",amountDivision, premiumRequest.getPolicyType());
         ls.forEach(app->app.setCopayDiscount(app.getBasePremium()*(Double.parseDouble(premiumRequest.getVoluntarilyCopay().getCopayPercent()))/100.0d));
     }
 
@@ -427,7 +428,7 @@ public class PremiumService {
             return ;
         }
 
-        final List<Applicables> ls = this.determineConfiguration("preferredhospitalNetwork",amountDivision, premiumRequest.getPolicyType());
+        final List<Applicable> ls = this.determineConfiguration("preferredhospitalNetwork",amountDivision, premiumRequest.getPolicyType());
         ls.forEach(app->app.setPreferredHospitalDiscount(app.getBasePremium()*0.10d));
     }
 
@@ -436,7 +437,7 @@ public class PremiumService {
             return ;
         }
 
-        final List<Applicables> ls = this.determineConfiguration("infiniteCare",amountDivision, premiumRequest.getPolicyType());
+        final List<Applicable> ls = this.determineConfiguration("infiniteCare",amountDivision, premiumRequest.getPolicyType());
         ls.forEach(
                 app-> {
                     app.setInfiniteCareLoading(app.getBasePremium()* this.dynamicConfigurations.getInfiniteCare(premiumRequest.getSumInsured()));
@@ -449,7 +450,7 @@ public class PremiumService {
             return ;
         }
 
-        final List<Applicables> ls = this.determineConfiguration("pedWaitingPeriod",amountDivision, premiumRequest.getPolicyType());
+        final List<Applicable> ls = this.determineConfiguration("pedWaitingPeriod",amountDivision, premiumRequest.getPolicyType());
         final Optional<Integer> maxAge = PremiumService.getMaxAge(ls);
         final int age = maxAge.orElse(0);
         final Double value = DynamicConfigurations.getReductionOfPEDWaitingPercent(age, premiumRequest.getPedWaitingRequest().getWaitingPeriod());
@@ -460,7 +461,7 @@ public class PremiumService {
     }
 
     private void specificDisease(final AmountDivision amountDivision, final PremiumRequest premiumRequest) {
-        final List<Applicables> ls = this.determineConfiguration("specificDisease",amountDivision, premiumRequest.getPolicyType());
+        final List<Applicable> ls = this.determineConfiguration("specificDisease",amountDivision, premiumRequest.getPolicyType());
         /* TODO make it generic */
         final Optional<Integer> maxAge = PremiumService.getMaxAge(ls);
         final int age = maxAge.orElse(0);
@@ -468,9 +469,9 @@ public class PremiumService {
         ls.forEach(app->app.setSpecificDiseaseLoading(app.getBasePremium()*loading));
     }
 
-    private static Optional<Integer> getMaxAge(final List<Applicables> ls) {
+    private static Optional<Integer> getMaxAge(final List<Applicable> ls) {
         return ls.stream()
-                .map(Applicables::getAge)
+                .map(Applicable::getAge)
                 .max(Integer::compareTo);
     }
 
@@ -479,7 +480,7 @@ public class PremiumService {
             return ;
         }
 
-        final List<Applicables> ls = this.determineConfiguration("futureReady",amountDivision, premiumRequest.getPolicyType());
+        final List<Applicable> ls = this.determineConfiguration("futureReady",amountDivision, premiumRequest.getPolicyType());
         ls.forEach(app -> app.setFutureReadyLoading(app.getBasePremium()*DynamicConfigurations.getFutureReadyconf(app.getAge())));
     }
 
@@ -487,15 +488,15 @@ public class PremiumService {
         if(!premiumRequest.isConsumableCover())
             return ;
 
-        final List<Applicables> ls = this.determineConfiguration("consumableCover",amountDivision, premiumRequest.getPolicyType());
+        final List<Applicable> ls = this.determineConfiguration("consumableCover",amountDivision, premiumRequest.getPolicyType());
         ls.forEach(app->app.setConsumableCoverLoading(app.getBasePremium()*0.10d));
     }
 
     private void instantCover(final AmountDivision amountDivision, final PremiumRequest premiumRequest) {
         final Set<String> masterDiseases = Set.of("BP", "DM", "CAD", "Asthma", "Hyperlipedimia");
-        final List<Applicables> applicables = this.determineConfiguration("instantCover",amountDivision, premiumRequest.getPolicyType());
+        final List<Applicable> applicables = this.determineConfiguration("instantCover",amountDivision, premiumRequest.getPolicyType());
 
-        for (final Applicables app : applicables) {
+        for (final Applicable app : applicables) {
             final boolean isMasterDisease = app.getPeds().stream().anyMatch(masterDiseases::contains);
             final boolean isCad = app.getPeds().contains("CAD");
 
@@ -511,7 +512,7 @@ public class PremiumService {
     private void applyPowerBooster(final AmountDivision amountDivision, final PremiumRequest premiumRequest) {
         if(!premiumRequest.isPowerBooster())
             return ;
-        final List<Applicables> ls = this.determineConfiguration("powerbooster",amountDivision, premiumRequest.getPolicyType());
+        final List<Applicable> ls = this.determineConfiguration("powerbooster",amountDivision, premiumRequest.getPolicyType());
         ls.forEach(app -> {
             app.setPowerBoosterLoading(app.getPowerBoosterLoading() + app.getBasePremium()* this.dynamicConfigurations.getPowerBooster(premiumRequest.getSumInsured()));
         });
@@ -522,18 +523,18 @@ public class PremiumService {
         this.zoneDiscount(amountDivision, premiumRequest);
         this.floaterDiscount(amountDivision, premiumRequest);
         this.reflexLoading(amountDivision, premiumRequest);
-        amountDivision.getApplicables().forEach(Applicables::prepareStageISum);
+        amountDivision.getApplicables().forEach(Applicable::prepareStageISum);
     }
 
     private void reflexLoading(final AmountDivision amountDivision, final PremiumRequest premiumRequest) {
 
-        final List<Applicables> ls = this.determineConfiguration("reflexLoading",amountDivision, premiumRequest.getPolicyType());
+        final List<Applicable> ls = this.determineConfiguration("reflexLoading",amountDivision, premiumRequest.getPolicyType());
         ls.forEach(app -> app.setReflexLoadingExpense(app.getReflexLoadingExpense() + app.getBasePremium()*app.getReflexLoadingPercentage()));
     }
 
     private void floaterDiscount(final AmountDivision amountDivision, final PremiumRequest premiumRequest) {
 
-        final List<Applicables> ls = this.determineConfiguration("floater",amountDivision, premiumRequest.getPolicyType());
+        final List<Applicable> ls = this.determineConfiguration("floater",amountDivision, premiumRequest.getPolicyType());
         final double discount = "floater".equals(premiumRequest.getPolicyType()) ? 0.20d : 0.0d ;
         ls.forEach(app -> {
             app.setPolicyTypeDiscount(app.getPolicyTermDiscount() + app.getBasePremium()*discount);
@@ -543,7 +544,7 @@ public class PremiumService {
 
     private void zoneDiscount(final AmountDivision amountDivision, final PremiumRequest premiumRequest) {
 
-        final List<Applicables> ls = this.determineConfiguration("zonalDiscount",amountDivision, premiumRequest.getPolicyType());
+        final List<Applicable> ls = this.determineConfiguration("zonalDiscount",amountDivision, premiumRequest.getPolicyType());
         final double discount;
         if("B".equals(premiumRequest.getZone())){
             discount = 0.17d;
@@ -563,11 +564,15 @@ public class PremiumService {
 
     private void lookup(final AmountDivision amountDivision, final PremiumRequest premiumRequest) {
 
-        final List<Applicables> ls = this.determineConfiguration("lookup",amountDivision, premiumRequest.getPolicyType());
+        final List<Applicable> ls = this.determineConfiguration("lookup",amountDivision, premiumRequest.getPolicyType());
         ls.forEach(applicable -> applicable.setBasePremium(this.premiumConfig.getPremium(applicable.getAge(), applicable.getType(), premiumRequest.getSumInsured())));
     }
 
-    private List<Applicables> determineConfiguration(final String config, final AmountDivision amountDivision, final String policyType) {
-        return Utils.get(this.mandatoryConfiguration.getConf(config, policyType), amountDivision.getApplicables());
+    private List<Applicable> determineConfiguration(final String config, final AmountDivision amountDivision, final String policyType) {
+        try {
+            return Utils.get(this.mandatoryConfiguration.getConf(config, policyType), amountDivision.getApplicables());
+        } catch (final JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

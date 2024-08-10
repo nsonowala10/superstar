@@ -20,7 +20,6 @@ public class PremiumRequest implements Serializable {
     private boolean consumableCover;
     private boolean futureReady;
     private boolean reductionOnSpecificDisease;
-
     private boolean preferredHospital;
     private VoluntarilyDeductible voluntarilyDeductible;
     private VoluntarilyCopay voluntarilyCopay;
