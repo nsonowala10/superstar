@@ -13,24 +13,39 @@ import com.quotes.premium.dto.Attribute;
 @Configuration
 public class MandatoryConfiguration {
     @Value("${floater.prerequisite.configurations}")
-    private String featureConf;
-    private Map<String, Attribute> featureConfMap = new HashMap<>();
+    private String floaterConf;
 
-    public Attribute getConf(final String feature)  {
-        if(this.featureConfMap.isEmpty()) {
-            try {
-                prepareConfMap();
-            } catch (JsonProcessingException e) {
-                throw new RuntimeException(e);
+    @Value("${individual.prerequisite.configurations}")
+    private String individualConf;
+
+    private Map<String, Attribute> floaterMandatoryConf = new HashMap<>();
+    private Map<String, Attribute> individualMandatoryConf = new HashMap<>();
+
+    public Attribute getConf(final String feature, String policyType)  {
+        if(policyType.equals("individual")){
+            if(this.individualMandatoryConf.isEmpty()) {
+                try {
+                    prepareConfMap(floaterConf, individualMandatoryConf);
+                } catch (JsonProcessingException e) {
+                    throw new RuntimeException(e);
+                }
             }
         }
-
-        return this.featureConfMap.get(feature);
+        else{
+            if(this.floaterMandatoryConf.isEmpty()) {
+                try {
+                    prepareConfMap(individualConf, floaterMandatoryConf);
+                } catch (JsonProcessingException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        }
+        return this.floaterMandatoryConf.get(feature);
     }
 
-    private void prepareConfMap() throws JsonProcessingException {
+    private void prepareConfMap(String featureConf, Map<String,Attribute> map) throws JsonProcessingException {
         final ObjectMapper objectMapper = new ObjectMapper();
-        final Map<String, Map<String, Object>> tempMap = objectMapper.readValue(this.featureConf, new TypeReference<Map<String, Map<String, Object>>>() {
+        final Map<String, Map<String, Object>> tempMap = objectMapper.readValue(featureConf, new TypeReference<Map<String, Map<String, Object>>>() {
             @Override
             public Type getType() {
                 return super.getType();
@@ -48,7 +63,7 @@ public class MandatoryConfiguration {
                     (Boolean) attributesMap.get("rounding"),
                     (String) attributesMap.get("stage")
             );
-            this.featureConfMap.put(key, attributes);
+            map.put(key, attributes);
         }
     }
 
