@@ -15,9 +15,14 @@ public class MandatoryConfiguration {
     private String featureConf;
     private Map<String, Attribute> featureConfMap;
 
-    private Attribute getConf(final String feature) throws JsonProcessingException {
-        if(this.featureConf.isEmpty())
-            prepareConfMap();
+    public Attribute getConf(final String feature)  {
+        if(this.featureConf.isEmpty()) {
+            try {
+                prepareConfMap();
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException(e);
+            }
+        }
 
         return this.featureConfMap.get(feature);
     }

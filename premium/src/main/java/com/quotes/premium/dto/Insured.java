@@ -2,19 +2,20 @@ package com.quotes.premium.dto;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 @Getter
 @Setter
 public class Insured {
     private String type; // adult or child
     private int age;
-    private Set<String> peds = new HashSet<>();
+    private List<String> peds = new ArrayList<>();
     private boolean riskBasedLoading = false;
     private Double basePremium;
     private boolean instantCover; // need to ask
+    private boolean nri;
+    private boolean proposer;
+    private Double reflexLoading;
 
     private final static Set<String> masterDisease = new HashSet<String>(Arrays.asList("BP","DM","CAD","Asthma","Hyperlipedimia"));
 

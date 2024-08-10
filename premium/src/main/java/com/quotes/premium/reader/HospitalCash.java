@@ -56,6 +56,10 @@ public class HospitalCash {
     }
 
     private static void map(final String fileName, final Map<String,Double> map) {
+        if(!map.isEmpty()){
+            return ;
+        }
+
         try (final InputStream file = FutureReadyConf.class.getClassLoader().getResourceAsStream(fileName)) {
             assert null != file;
             try (final Workbook workbook = WorkbookFactory.create(file)) {

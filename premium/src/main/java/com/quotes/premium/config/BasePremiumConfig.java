@@ -20,36 +20,36 @@ public class BasePremiumConfig {
 
     @PostConstruct
     public void config(){
-        this.excelReader.preparePremium(parentPremium, "/Users/anil.juneja/Downloads/parent_ss_premium.xlsx" );
-        this.excelReader.preparePremium(childPremium, "/Users/anil.juneja/Downloads/child_ss_premium.xlsx" );
+        this.excelReader.preparePremium(parentPremium, "parent_ss_premium.xlsx" );
+        this.excelReader.preparePremium(childPremium, "child_ss_premium.xlsx" );
         System.out.println(parentPremium.get("40#500000"));
         System.out.println(childPremium.get("16-20#500000"));
     }
 
-    public Double getPremium(Insured insured, String sumInsured){
+
+    public Double getPremium(int age, String type, String sumInsured){
         String key = null;
-        String age = null;
         sumInsured = Long.valueOf(sumInsured) > 10000000 ? "UNLIMITED" : sumInsured;
-        switch(insured.getType()){
+        switch(type){
             case "parent":{
-                age = Long.valueOf(insured.getAge()) > 80 ? ">80" : String.valueOf(insured.getAge());
-                key = age + "#" +sumInsured;
+                key = age > 80 ? ">80" : age + "#" +sumInsured;
                 return this.parentPremium.get(key);
             }
             case "child":{
-                if(insured.getAge() <= 15){
-                    age = "<=15";
+                String ageString = null;
+                if(age <= 15){
+                    ageString = "<=15";
                 }
 
-                else if(insured.getAge() <= 20){
-                    age = "16-20";
+                else if( Long.valueOf(age) <= 20){
+                    ageString = "16-20";
                 }
 
-                else if(insured.getAge() <= 25){
-                    age = "21-25";
+                else if( Long.valueOf(age) <= 25){
+                    ageString = "21-25";
                 }
 
-                key = age + "#" +sumInsured;
+                key = ageString + "#" +sumInsured;
                 return this.childPremium.get(key);
             }
         }

@@ -20,14 +20,26 @@ public class PremiumRequest implements Serializable {
     private boolean consumableCover;
     private boolean futureReady;
     private boolean reductionOnSpecificDisease;
-    private boolean reductionOfPed;
+
     private boolean preferredHospital;
     private VoluntarilyDeductible voluntarilyDeductible;
     private VoluntarilyCopay voluntarilyCopay;
     private boolean infiniteCare;
-    private boolean sharedRoom;
+    private RoomRent roomRent;
     private boolean subLimitsForModernTreatments;
     private boolean durableMedicalEquipmentCover;
-    private boolean wellnessDiscount;
+    private WellnessDiscount wellnessDiscount;
     private boolean nriDiscount;
+    private PedWaitingRequest pedWaitingRequest;
+    private MaternityRequest maternityRequest;
+    private boolean womenCare;
+    private boolean highEndDiagnostic;
+    private boolean annualCheckUp;
+    private boolean internationalSecondOpinion;
+    private boolean compassionateVisit;
+    private HospitalCashRequest hospitalCashRequest;
+    private PACoverRequest paCoverRequest;
+    private boolean healthQuestionnaire;
+    private CibilScoreRequest cibilScoreRequest;
+    private boolean earlyRenewalDiscount;
 }

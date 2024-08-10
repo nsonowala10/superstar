@@ -6,6 +6,7 @@ import org.springframework.stereotype.Component;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -14,8 +15,8 @@ import java.util.Map;
 public class ExcelReader {
 
     public void preparePremium(Map<String,Double> valueMap , String filePath){
-        try (FileInputStream file = new FileInputStream(new File(filePath));
-             Workbook workbook = WorkbookFactory.create(file)) {
+        try (InputStream file = ExcelReader.class.getClassLoader().getResourceAsStream(filePath) ;
+            Workbook workbook = WorkbookFactory.create(file)) {
             Map<Integer, String> headerMap = new HashMap<>();
             Sheet sheet = workbook.getSheetAt(0);
             int row_num = 0;
