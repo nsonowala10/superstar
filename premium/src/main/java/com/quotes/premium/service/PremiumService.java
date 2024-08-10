@@ -36,12 +36,12 @@ public class PremiumService {
 
     private void createInsuredMapping(final AmountDivision amountDivision, final PremiumRequest premiumRequest) {
 
-        for(int year =1;year < premiumRequest.getPolicyTerm();year ++){
+        for(int year =1;year <= premiumRequest.getPolicyTerm();year ++){
             for(final Insured insured : premiumRequest.getInsured()){
                 Applicables applicables = new Applicables();
                 applicables.setAge(insured.getAge());
                 applicables.setType(insured.getType());
-                applicables.setYear(premiumRequest.getPolicyTerm());
+                applicables.setYear(year);
                 applicables.setPeds(insured.getPeds());
                 applicables.setNri(insured.isNri());
                 applicables.setProposer(insured.isProposer());
@@ -160,7 +160,15 @@ public class PremiumService {
         Double perMile = "1".equals(option) ? 1.0d : 2.0d;
         Double sumInsured = Double.valueOf(premiumRequest.getSumInsured());
         Double perMileExpense = sumInsured * perMile / 1000.0d;
-        ls.forEach(app -> app.setPaCoverExpense(app.getPaCoverExpense() + perMileExpense));
+        int maxAge = getMaxAge(ls).get();
+        ls.forEach(app -> {
+            if(app.getAge() == maxAge){
+                app.setPaCoverExpense(app.getPaCoverExpense() + perMileExpense);
+            }
+            else{
+                app.setPaCoverExpense(app.getPaCoverExpense() + perMileExpense/2.0d);
+            }
+        });
     }
 
     private void hospitalCash(AmountDivision amountDivision, PremiumRequest premiumRequest) {
@@ -286,7 +294,7 @@ public class PremiumService {
                     break;
 
                 }
-                case "c":{
+                case "C":{
                     if(sumInsured == 500000 || sumInsured == 750000){
                         newBornAmount = 10000.0d;
                     }
@@ -308,8 +316,10 @@ public class PremiumService {
 
     private void nriDiscount(AmountDivision amountDivision, PremiumRequest premiumRequest) {
         List<Applicables> ls = Utils.get(mandatoryConfiguration.getConf("wellnessDiscount"),amountDivision.getApplicables());
-        if(ls.stream().noneMatch(app ->!app.isNri())){
-            return ;
+        for(Applicables app : ls){
+            if(!app.isNri()){
+                return ;
+            }
         }
 
         ls.forEach(app->{
@@ -374,7 +384,7 @@ public class PremiumService {
     }
 
     private void roomRentModification(AmountDivision amountDivision, PremiumRequest premiumRequest) {
-        if(null == premiumRequest.getRoomRent() || !premiumRequest.getRoomRent().isRoomRent()){
+        if(null == premiumRequest.getRoomRent() || !premiumRequest.getRoomRent().isRent()){
             return ;
         }
         List<Applicables> ls = Utils.get(mandatoryConfiguration.getConf("roomRent"),amountDivision.getApplicables());
@@ -416,6 +426,9 @@ public class PremiumService {
     }
 
     private void infiniteCare(AmountDivision amountDivision, PremiumRequest premiumRequest) {
+        if(!premiumRequest.isInfiniteCare()){
+            return ;
+        }
         List<Applicables> ls = Utils.get(mandatoryConfiguration.getConf("infiniteCare"),amountDivision.getApplicables());
         ls.forEach(
                 app-> {
@@ -430,18 +443,35 @@ public class PremiumService {
         }
 
         List<Applicables> ls = Utils.get(mandatoryConfiguration.getConf("pedWaitingPeriod"),amountDivision.getApplicables());
+        Optional<Integer> maxAge = getMaxAge(ls);
+        int age = maxAge.orElse(null);
+        Double value = DynamicConfigurations.getReductionOfPEDWaitingPercent(age, premiumRequest.getPedWaitingRequest().getWaitingPeriod());
         ls.forEach(app -> {
             app.setPedWaitingPeriodLoading(app.getBasePremium()*
-            DynamicConfigurations.getReductionOfPEDWaitingPercent(app.getAge(), premiumRequest.getPedWaitingRequest().getWaitingPeriod()));
+                    value);
         });
     }
 
     private void specificDisease(AmountDivision amountDivision, PremiumRequest premiumRequest) {
         List<Applicables> ls = Utils.get(mandatoryConfiguration.getConf("specificDisease"),amountDivision.getApplicables());
-        ls.forEach(app->app.setSpecificDiseaseLoading(app.getBasePremium()*DynamicConfigurations.getSpecificDiseaseConf(app.getAge())));
+        /* TODO make it generic */
+        Optional<Integer> maxAge = getMaxAge(ls);
+        int age = maxAge.orElse(null);
+        double loading = DynamicConfigurations.getSpecificDiseaseConf(age);
+        ls.forEach(app->app.setSpecificDiseaseLoading(app.getBasePremium()*loading));
+    }
+
+    private static Optional<Integer> getMaxAge(List<Applicables> ls) {
+        Optional<Integer> maxAge = ls.stream()
+                .map(Applicables::getAge)
+                .max(Integer::compareTo);
+        return maxAge;
     }
 
     private void futureReady(AmountDivision amountDivision, PremiumRequest premiumRequest) {
+        if(!premiumRequest.isFutureReady()){
+            return ;
+        }
         List<Applicables> ls = Utils.get(mandatoryConfiguration.getConf("futureReady"),amountDivision.getApplicables());
         ls.forEach(app -> app.setFutureReadyLoading(app.getBasePremium()*DynamicConfigurations.getFutureReadyconf(app.getAge())));
     }
@@ -502,7 +532,10 @@ public class PremiumService {
     private void floaterDiscount(AmountDivision amountDivision, PremiumRequest premiumRequest) {
         List<Applicables> ls = Utils.get(mandatoryConfiguration.getConf("floater"),amountDivision.getApplicables());
         final double discount = "floater".equals(premiumRequest.getPolicyType()) ? 0.20d : 0.0d ;
-        ls.forEach(app -> app.setPolicyTypeDiscount(app.getPolicyTermDiscount() + app.getBasePremium()*discount));
+        ls.forEach(app -> {
+            app.setPolicyTypeDiscount(app.getPolicyTermDiscount() + app.getBasePremium()*discount);
+            app.setBasePremium(app.getBasePremium() - app.getPolicyTypeDiscount());
+        });
     }
 
     private void zoneDiscount(AmountDivision amountDivision, PremiumRequest premiumRequest) {
@@ -518,7 +551,10 @@ public class PremiumService {
             discount = 0.0d;
         }
 
-        ls.forEach(app -> app.setZoneDiscount(app.getZoneDiscount() + app.getBasePremium()*discount));
+        ls.forEach(app -> {
+            app.setZoneDiscount(app.getZoneDiscount() + app.getBasePremium()*discount);
+            app.setBasePremium(app.getBasePremium() - app.getZoneDiscount());
+        });
     }
 
     private void lookup(AmountDivision amountDivision, PremiumRequest premiumRequest) {

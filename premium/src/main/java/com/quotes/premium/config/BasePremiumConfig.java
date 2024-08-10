@@ -31,7 +31,7 @@ public class BasePremiumConfig {
         String key = null;
         sumInsured = Long.valueOf(sumInsured) > 10000000 ? "UNLIMITED" : sumInsured;
         switch(type){
-            case "parent":{
+            case "adult":{
                 key = age > 80 ? ">80" : age + "#" +sumInsured;
                 return this.parentPremium.get(key);
             }

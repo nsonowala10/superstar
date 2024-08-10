@@ -6,6 +6,6 @@ import lombok.Setter;
 @Getter
 @Setter
 public class RoomRent {
-    private boolean roomRent;
+    private boolean rent;
     private String option;
 }

@@ -15,7 +15,7 @@ public class Insured {
     private boolean instantCover; // need to ask
     private boolean nri;
     private boolean proposer;
-    private Double reflexLoading;
+    private Double reflexLoading = 0.0d;
 
     private final static Set<String> masterDisease = new HashSet<String>(Arrays.asList("BP","DM","CAD","Asthma","Hyperlipedimia"));
 

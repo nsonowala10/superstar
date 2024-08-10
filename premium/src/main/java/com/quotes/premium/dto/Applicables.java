@@ -2,12 +2,14 @@ package com.quotes.premium.dto;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Getter
 @Setter
+@ToString
 public class Applicables {
 
     private Double basePremium;
@@ -40,9 +42,9 @@ public class Applicables {
     private Double paCoverExpense = 0.0d;
     private Double healthQuestionnaireDiscount = 0.0d;
     private Double cibilDiscount = 0.0d;
-    private Double earlyRenewalDiscount;
-    private Double longTermDiscount;
-    private Double reflexLoadingExpense;
+    private Double earlyRenewalDiscount = 0.0d;
+    private Double longTermDiscount = 0.0d;
+    private Double reflexLoadingExpense = 0.0d;
 
     private Double stageIVSum = 0.0d;
     private Double stageIIISum = 0.0d;
@@ -56,7 +58,7 @@ public class Applicables {
     private List<String> peds = new ArrayList<>();
     private boolean nri;
     private boolean proposer;
-    private Double reflexLoadingPercentage;
+    private Double reflexLoadingPercentage = 0.0d;
 
 
 
@@ -89,8 +91,6 @@ public class Applicables {
 
     public void prepareStageISum(){
         this.stageISum = this.basePremium = this.basePremium
-                - this.zoneDiscount
-                - this.policyTypeDiscount
                 + this.reflexLoadingExpense;
     }
 

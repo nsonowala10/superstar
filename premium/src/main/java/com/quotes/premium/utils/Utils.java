@@ -30,7 +30,7 @@ public class Utils {
             return applicableList.stream().filter(app -> "child".equals(app.getType())).toList();
         }
 
-        return null;
+        return applicableList;
     }
 
     private static List<Applicables> handleYear(Attribute attribute, List<Applicables> applicables) {

@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import java.lang.reflect.Type;
+import java.util.HashMap;
 import java.util.Map;
 import com.quotes.premium.dto.Attribute;
 
@@ -13,10 +14,10 @@ import com.quotes.premium.dto.Attribute;
 public class MandatoryConfiguration {
     @Value("${floater.prerequisite.configurations}")
     private String featureConf;
-    private Map<String, Attribute> featureConfMap;
+    private Map<String, Attribute> featureConfMap = new HashMap<>();
 
     public Attribute getConf(final String feature)  {
-        if(this.featureConf.isEmpty()) {
+        if(this.featureConfMap.isEmpty()) {
             try {
                 prepareConfMap();
             } catch (JsonProcessingException e) {
@@ -38,6 +39,7 @@ public class MandatoryConfiguration {
 
         for (Map.Entry<String, Map<String, Object>> entry : tempMap.entrySet()) {
             String key = entry.getKey();
+            System.out.println(key);
             Map<String, Object> attributesMap = entry.getValue();
             Attribute attributes = new Attribute(
                     (String) attributesMap.get("insured"),

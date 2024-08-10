@@ -22,10 +22,14 @@ public class AnnualCheckUpConfig {
                     if (cell == null) continue;
 
                     String policyType = row.getCell(0).getStringCellValue().trim();
-                    String sumInsured = waitingPeriodRow.getCell(cellIndex).getStringCellValue();
-                    String key = policyType + "#" + sumInsured;
+                    String sumInsured = null;
+                    switch(waitingPeriodRow.getCell(cellIndex).getCellType()){
+                        case NUMERIC -> sumInsured =String.valueOf((long)waitingPeriodRow.getCell(cellIndex).getNumericCellValue());
+                        case STRING -> sumInsured =waitingPeriodRow.getCell(cellIndex).getStringCellValue();
+                    }
+                    String key = policyType.toLowerCase() + "#" + sumInsured;
 
-                    DynamicConfigurations.reductionOfPEWaitingPeriod.put(key, cell.getNumericCellValue());
+                    DynamicConfigurations.annualHealthCheck.put(key, cell.getNumericCellValue());
                     System.out.println(key + " " + cell.getNumericCellValue());
                 }
             }

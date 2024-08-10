@@ -22,34 +22,29 @@ public class HospitalCash {
         else{
             HospitalCash.map("hospital_cash_floater.xlsx", HospitalCash.floaterMap);
             final String ageBand = HospitalCash.findAgeBand(age, HospitalCash.floaterMap);
-            return HospitalCash.floaterMap.get(ageBand);
+            return HospitalCash.floaterMap.get(ageBand + "#" +hospitalDay);
         }
     }
 
     private static String findAgeBand(final int age, final Map<String, Double> map) {
-        for (final Map.Entry<String, Double> entry : FutureReadyConf.map.entrySet()) {
-            final String key = entry.getKey();
-            if (key.startsWith("GT")) {
-                // Handle "GT" case
-                if (age > Integer.parseInt(key.substring(3).trim())) {
-                    return key;
-                }
-            } else if (key.startsWith("LTE")) {
-                // Handle "LTE" case
-                if (age <= Integer.parseInt(key.substring(4).trim())) {
-                    return key;
-                }
-            } else {
-                // Handle range case
-                final String[] parts = key.split("-");
-                final int start = Integer.parseInt(parts[0]);
-                final int end = Integer.parseInt(parts[1]);
-                if (age >= start && age <= end) {
-                    return key;
-                }
-            }
+        String ageBand;
+        if (age <= 35) {
+            ageBand = "LTE 35";
+        } else if (age <= 45) {
+            ageBand = "36-45";
+        } else if (age <= 50) {
+            ageBand = "46-50";
+        } else if (age <= 55) {
+            ageBand = "51-55";
+        } else if (age <= 60) {
+            ageBand = "56-60";
+        } else if (age <= 65) {
+            ageBand = "61-65";
+        } else {
+            ageBand = "GT 65";
         }
-        return null ;
+
+        return ageBand;
     }
 
     private static void floaterMap() {

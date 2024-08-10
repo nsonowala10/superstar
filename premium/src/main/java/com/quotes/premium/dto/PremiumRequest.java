@@ -29,7 +29,6 @@ public class PremiumRequest implements Serializable {
     private boolean subLimitsForModernTreatments;
     private boolean durableMedicalEquipmentCover;
     private WellnessDiscount wellnessDiscount;
-    private boolean nriDiscount;
     private PedWaitingRequest pedWaitingRequest;
     private MaternityRequest maternityRequest;
     private boolean womenCare;

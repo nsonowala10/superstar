@@ -42,7 +42,7 @@ public class ValidationService {
     private void validateInsured(List<Insured> insured){
         if(null == insured)
             throw new RuntimeException("family size is wrong");
-        long parent = insured.stream().filter(ins -> ins.getType().equals("parent")).count();
+        long parent = insured.stream().filter(ins -> ins.getType().equals("adult")).count();
         long child = insured.stream().filter(ins -> ins.getType().equals("child")).count();
         if(parent > 2 || child > 4)
             throw new RuntimeException("family size is wrong");
@@ -53,7 +53,7 @@ public class ValidationService {
         if(!ALLOWED_VALUES.contains(policyType))
             throw new RuntimeException("policy type is wrong");
 
-        long parent = insured.stream().filter(ins -> ins.getType().equals("parent")).count();
+        long parent = insured.stream().filter(ins -> ins.getType().equals("adult")).count();
         long child = insured.stream().filter(ins -> ins.getType().equals("child")).count();
         if(policyType.equals("floater") && parent + child < 2)
             throw new RuntimeException("floater must have more than one insured");
