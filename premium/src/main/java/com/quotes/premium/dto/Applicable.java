@@ -12,39 +12,40 @@ import java.util.List;
 @ToString
 public class Applicable {
 
-    private Double basePremium;
-    private Double zoneDiscount = 0.0d;
+    private Double basePremium = 0.0d;
+    private Double lookup = 0.0d;
+    private Double zonalDiscount = 0.0d;
     private Double policyTermDiscount = 0.0d;
-    private Double policyTypeDiscount = 0.0d;
-    private Double preferredHospitalDiscount = 0.0d;
-    private Double copayDiscount = 0.0d;
-    private Double deductibleDiscount = 0.0d;
-    private Double powerBoosterLoading = 0.0d;
-    private Double instantCoverLoading = 0.0d;
-    private Double consumableCoverLoading = 0.0d;
-    private Double futureReadyLoading = 0.0d;
-    private Double pedWaitingPeriodLoading = 0.0d;
-    private Double specificDiseaseLoading = 0.0d;
-    private Double infiniteCareLoading = 0.0d;
+    private Double floater = 0.0d;
+    private Double preferredHospitalNetwork = 0.0d;
+    private Double copay = 0.0d;
+    private Double deductible = 0.0d;
+    private Double powerBooster = 0.0d;
+    private Double instantCover = 0.0d;
+    private Double consumableCover = 0.0d;
+    private Double futureReady = 0.0d;
+    private Double pedWaitingPeriod = 0.0d;
+    private Double specificDisease = 0.0d;
+    private Double infiniteCare = 0.0d;
     private Double sharedRoomDiscount = 0.0d;
-    private Double subLimitForModernTreatmentsDiscount = 0.0d;
-    private Double durableMedicalEquipmentCoverLoading = 0.0d;
+    private Double subLimitModeration = 0.0d;
+    private Double medicalEquipmentCover = 0.0d;
     private Double wellnessDiscount = 0.0d;
     private Double nriDiscount = 0.0d;
-    private Double roomRentDiscount = 0.0d;
+    private Double roomRent = 0.0d;
     private Double maternityExpense = 0.0d;
-    private Double womenCareExpense = 0.0d;
-    private Double highEndDiagnosticExpense = 0.0d;
-    private Double annualHealthCheckUpExpense = 0.0d;
-    private Double internationalSecondOpinionExpense = 0.0d;
-    private Double compassionateVisitExpense = 0.0d;
-    private Double hospitalCashExpense = 0.0d;
-    private Double paCoverExpense = 0.0d;
-    private Double healthQuestionnaireDiscount = 0.0d;
+    private Double womenCare = 0.0d;
+    private Double highEndDiagnostic = 0.0d;
+    private Double annualHealthCheckUp = 0.0d;
+    private Double internationalSecondOpinion = 0.0d;
+    private Double compassionateVisit = 0.0d;
+    private Double hospitalCash = 0.0d;
+    private Double paCover = 0.0d;
+    private Double healthQuestionnaire = 0.0d;
     private Double cibilDiscount = 0.0d;
-    private Double earlyRenewalDiscount = 0.0d;
+    private Double earlyRenewal = 0.0d;
     private Double longTermDiscount = 0.0d;
-    private Double reflexLoadingExpense = 0.0d;
+    private Double reflexLoading = 0.0d;
 
     private Double stageIVSum = 0.0d;
     private Double stageIIISum = 0.0d;
@@ -60,49 +61,27 @@ public class Applicable {
     private boolean proposer;
     private Double reflexLoadingPercentage = 0.0d;
 
-
-
-    public void prepareStageIISum(){
-        this.stageIISum = this.basePremium
-                + this.powerBoosterLoading
-                + this.instantCoverLoading
-                + this.consumableCoverLoading
-                + this.futureReadyLoading
-                + this.specificDiseaseLoading
-                + this.pedWaitingPeriodLoading
-                + this.infiniteCareLoading
-                - this.preferredHospitalDiscount
-                - this.copayDiscount
-                - this.deductibleDiscount
-                - this.roomRentDiscount
-                - this.subLimitForModernTreatmentsDiscount
-                + this.durableMedicalEquipmentCoverLoading
-                - this.wellnessDiscount
-                - this.nriDiscount
-                + this.maternityExpense
-                + this.womenCareExpense
-                + this.highEndDiagnosticExpense
-                + this.annualHealthCheckUpExpense
-                + this.internationalSecondOpinionExpense
-                + this.compassionateVisitExpense
-                + this.hospitalCashExpense
-                + this.paCoverExpense;
+    public void handleStageIIPremium() {
+        this.basePremium =
+                this.basePremium
+                        + this.maternityExpense
+                        + this.womenCare
+                        + this.highEndDiagnostic
+                        + this.annualHealthCheckUp
+                        + this.internationalSecondOpinion
+                        + this.compassionateVisit
+                        + this.hospitalCash
+                        + this.paCover;
     }
 
-    public void prepareStageISum(){
-        this.stageISum = this.basePremium = this.basePremium
-                + this.reflexLoadingExpense;
-    }
-
-    public void prepareStageIIISum() {
-        this.stageIIISum = this.stageIISum
-                - this.healthQuestionnaireDiscount
-                - this.cibilDiscount
-                - this.earlyRenewalDiscount;
-    }
-
-    public void prepareStageIVSum() {
-        this.stageIVSum = this.stageIIISum
-                - this.longTermDiscount;
+    public void handleStageIIIPremium() {
+        this.basePremium = Math.max(
+                this.basePremium
+                    - this.healthQuestionnaire
+                    - this.cibilDiscount
+                    - this.earlyRenewal
+                ,
+                this.stageIIISum*0.20d
+        );
     }
 }

@@ -11,4 +11,5 @@ public class Attribute{
     private boolean multiplicative;
     private boolean rounding;
     private String stage;
+    private String expenseType;
 }
