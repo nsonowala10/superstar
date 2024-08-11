@@ -22,8 +22,6 @@ public class BasePremiumConfig {
     public void config(){
         this.excelReader.preparePremium(parentPremium, "parent_ss_premium.xlsx" );
         this.excelReader.preparePremium(childPremium, "child_ss_premium.xlsx" );
-        System.out.println(parentPremium.get("40#500000"));
-        System.out.println(childPremium.get("16-20#500000"));
     }
 
 

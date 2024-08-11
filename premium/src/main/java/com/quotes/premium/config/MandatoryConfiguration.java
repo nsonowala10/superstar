@@ -63,7 +63,6 @@ public class MandatoryConfiguration {
         );
 
         tempMap.forEach((key, attributesMap) -> {
-            System.out.println(key);
             final Attribute attributes = new Attribute(
                     (String) attributesMap.get("insured"),
                     (String) attributesMap.get("year"),

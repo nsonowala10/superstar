@@ -9,9 +9,7 @@ import java.util.List;
 
 @Getter
 @Setter
-@ToString
 public class Applicable {
-
     private Double basePremium = 0.0d;
     private Double lookup = 0.0d;
     private Double zonalDiscount = 0.0d;
@@ -47,12 +45,6 @@ public class Applicable {
     private Double longTermDiscount = 0.0d;
     private Double reflexLoading = 0.0d;
 
-    private Double stageIVSum = 0.0d;
-    private Double stageIIISum = 0.0d;
-    private Double stageIISum = 0.0d;
-    private Double stageISum = 0.0d;
-
-
     private String type;
     private int age;
     private int year;
@@ -81,7 +73,8 @@ public class Applicable {
                     - this.cibilDiscount
                     - this.earlyRenewal
                 ,
-                this.stageIIISum*0.20d
+                this.basePremium -
+                        this.basePremium*0.20d
         );
     }
 }

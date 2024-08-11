@@ -70,7 +70,7 @@ public class SpecificDiseaseConf {
     }
 
     public static void main(String[] args) {
-        specificDiseaseConf();
+        SpecificDiseaseConf.specificDiseaseConf();
         System.out.println(map.keySet());
         System.out.println(map.values());
     }

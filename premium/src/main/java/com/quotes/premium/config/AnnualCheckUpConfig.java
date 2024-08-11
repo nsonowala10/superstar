@@ -28,9 +28,7 @@ public class AnnualCheckUpConfig {
                         case STRING -> sumInsured =waitingPeriodRow.getCell(cellIndex).getStringCellValue();
                     }
                     String key = policyType.toLowerCase() + "#" + sumInsured;
-
                     DynamicConfigurations.annualHealthCheck.put(key, cell.getNumericCellValue());
-                    System.out.println(key + " " + cell.getNumericCellValue());
                 }
             }
         }

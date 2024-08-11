@@ -1,5 +1,6 @@
 package com.quotes.premium.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.quotes.premium.config.BasePremiumConfig;
 import com.quotes.premium.config.DynamicConfigurations;
 import com.quotes.premium.config.MandatoryConfiguration;
@@ -10,6 +11,7 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.*;
 
@@ -89,7 +91,7 @@ public class PremiumService {
     public void handleLongTermDiscount(final AmountDivision amountDivision, final PremiumRequest premiumRequest, final List<Applicable> applicables) {
         final Map<Integer, Double> termMap = Map.of(1,0.0d,2,0.10d,3,0.125d,4,0.150d,5,0.150d);
         applicables.forEach(app -> {
-            app.setLongTermDiscount(app.getLongTermDiscount() + app.getStageIIISum()*termMap.get(app.getYear()));
+            app.setLongTermDiscount(app.getLongTermDiscount() + app.getBasePremium()*termMap.get(app.getYear()));
         });
     }
 
@@ -99,7 +101,7 @@ public class PremiumService {
         }
 
         final Attribute attribute = this.mandatoryConfiguration.getFeature("earlyRenewal", premiumRequest.getPolicyType());
-        applicables.forEach(app -> app.setEarlyRenewal(app.getEarlyRenewal() + app.getStageIISum()*0.025d));
+        applicables.forEach(app -> app.setEarlyRenewal(app.getEarlyRenewal() + app.getBasePremium()*0.025d));
     }
 
     public void handleCibilDiscount(final AmountDivision amountDivision, final PremiumRequest premiumRequest, final List<Applicable> applicables) {
@@ -123,7 +125,7 @@ public class PremiumService {
             discount = 0.0d;
         }
         final Attribute attribute = this.mandatoryConfiguration.getFeature("cibilDiscount", premiumRequest.getPolicyType());
-        applicables.forEach(app -> app.setCibilDiscount(app.getCibilDiscount() + app.getStageIISum()*discount));
+        applicables.forEach(app -> app.setCibilDiscount(app.getCibilDiscount() + app.getBasePremium()*discount));
     }
 
     public void handleHealthQuestionnaire(final AmountDivision amountDivision, final PremiumRequest premiumRequest, final List<Applicable> applicables) {
@@ -131,7 +133,7 @@ public class PremiumService {
             return ;
         }
         final Attribute attribute = this.mandatoryConfiguration.getFeature("healthQuestionnaire", premiumRequest.getPolicyType());
-        applicables.forEach(app -> app.setHealthQuestionnaire(app.getHealthQuestionnaire() + app.getStageIISum()*0.1d));
+        applicables.forEach(app -> app.setHealthQuestionnaire(app.getHealthQuestionnaire() + app.getBasePremium()*0.1d));
     }
 
     public void handlePaCover(final AmountDivision amountDivision, final PremiumRequest premiumRequest, final List<Applicable> applicables) {
@@ -508,11 +510,9 @@ public class PremiumService {
     }
 
     public void handleFloater(final AmountDivision amountDivision, final PremiumRequest premiumRequest, final List<Applicable> applicables) {
-        final Attribute attribute = this.mandatoryConfiguration.getFeature("floater", premiumRequest.getPolicyType());
-        
-        final double discount = "floater".equals(premiumRequest.getPolicyType()) ? 0.20d : 0.0d ;
+        final double discount = "floater".equals(premiumRequest.getPolicyType()) ? 0.20d : 0.0d;
         applicables.forEach(app -> {
-            app.setFloater(app.getPolicyTermDiscount() + app.getBasePremium()*discount);
+            app.setFloater(app.getFloater() + app.getBasePremium()*discount);
         });
     }
 

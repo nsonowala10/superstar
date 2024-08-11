@@ -26,7 +26,6 @@ public class PedWaitingConfig {
                     String key = ageBand + "#" + waitingPeriod;
 
                     DynamicConfigurations.reductionOfPEWaitingPeriod.put(key, cell.getNumericCellValue());
-                    System.out.println(key + " " + cell.getNumericCellValue());
                 }
             }
         }

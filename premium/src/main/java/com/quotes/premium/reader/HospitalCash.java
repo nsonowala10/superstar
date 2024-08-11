@@ -85,7 +85,6 @@ public class HospitalCash {
         HospitalCash.map("hospital_cash_floater.xlsx", HospitalCash.floaterMap);
         System.out.println(HospitalCash.individualMap.keySet());
         System.out.println(HospitalCash.individualMap.values());
-
         System.out.println(HospitalCash.floaterMap.keySet());
         System.out.println(HospitalCash.floaterMap.values());
     }
