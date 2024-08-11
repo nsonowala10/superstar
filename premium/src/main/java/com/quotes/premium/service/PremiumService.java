@@ -538,7 +538,6 @@ public class PremiumService {
     public void handleLookup(final AmountDivision amountDivision, final PremiumRequest premiumRequest, final List<Applicable> applicables) {
 
         final Attribute attribute = this.mandatoryConfiguration.getFeature("lookup", premiumRequest.getPolicyType());
-
         applicables.forEach(applicable -> applicable.setLookup(this.premiumConfig.getPremium(applicable.getAge(), applicable.getType(), premiumRequest.getSumInsured())));
     }
 
@@ -564,5 +563,9 @@ public class PremiumService {
 
     private static String capitalizeFirstLetter(final String str) {
         return Character.toUpperCase(str.charAt(0)) + str.substring(1);
+    }
+
+    public String test(final String var){
+        return var;
     }
 }

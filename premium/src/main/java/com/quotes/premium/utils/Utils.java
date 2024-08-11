@@ -14,7 +14,6 @@ public class Utils {
 
     private static List<Applicable> handleInsured(final List<Applicable> applicableList, final Attribute attribute) {
         final String insuredType = attribute.getInsured();
-
         return switch (insuredType) {
             case "oldest" -> {
                 final Optional<Integer> maxAge = applicableList.stream()
@@ -24,7 +23,7 @@ public class Utils {
                         .filter(app -> app.getAge() == (maxAge.orElse(0)))
                         .toList();
             }
-            case "adult", "child" -> applicableList.stream()
+            case "proposer", "adult", "child" -> applicableList.stream()
                     .filter(app -> insuredType.equals(app.getType()))
                     .toList();
             default -> applicableList;
