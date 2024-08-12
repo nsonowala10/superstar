@@ -13,7 +13,6 @@ public class Applicable {
     private Double basePremium = 0.0d;
     private Double lookup = 0.0d;
     private Double zonalDiscount = 0.0d;
-    private Double policyTermDiscount = 0.0d;
     private Double floater = 0.0d;
     private Double preferredHospitalNetwork = 0.0d;
     private Double copay = 0.0d;
@@ -44,6 +43,7 @@ public class Applicable {
     private Double earlyRenewal = 0.0d;
     private Double longTermDiscount = 0.0d;
     private Double reflexLoading = 0.0d;
+    private Double bonusMaximizer = 0.0d;
 
     private String type;
     private int age;

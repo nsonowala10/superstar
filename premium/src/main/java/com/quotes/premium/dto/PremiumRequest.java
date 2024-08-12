@@ -42,4 +42,5 @@ public class PremiumRequest implements Serializable {
     private boolean healthQuestionnaire;
     private CibilScoreRequest cibilScoreRequest;
     private boolean earlyRenewalDiscount;
+    private boolean bonusMaximizer;
 }

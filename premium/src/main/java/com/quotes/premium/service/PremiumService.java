@@ -34,7 +34,6 @@ public class PremiumService {
         final List<String> executionKeys = this.mandatoryConfiguration.getExecutionKeys();
         final AmountDivision amountDivision = new AmountDivision();
         this.createInsuredMapping(amountDivision, premiumRequest);
-
         for(final String key : executionKeys){
             PremiumService.log.info("handling execution key : {} ",key);
             final Attribute attribute = confMap.get(key);
@@ -50,7 +49,6 @@ public class PremiumService {
                 this.applyMultiplicative(app, attribute, key, "basePremium");
             });
         }
-
         return amountDivision;
     }
 
@@ -86,6 +84,15 @@ public class PremiumService {
                 amountDivision.getApplicables().add(applicable);
             }
         }
+    }
+
+    public void handleBonusMaximizer(final AmountDivision amountDivision, final PremiumRequest premiumRequest, final List<Applicable> applicables) {
+        if(!premiumRequest.isBonusMaximizer()){
+            return ;
+        }
+        applicables.forEach(app -> {
+            app.setBonusMaximizer(app.getBonusMaximizer() + app.getBasePremium()*0.20d);
+        });
     }
 
     public void handleLongTermDiscount(final AmountDivision amountDivision, final PremiumRequest premiumRequest, final List<Applicable> applicables) {
