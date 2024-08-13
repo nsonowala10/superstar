@@ -1,6 +1,5 @@
 package com.quotes.premium.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.quotes.premium.config.BasePremiumConfig;
 import com.quotes.premium.config.DynamicConfigurations;
 import com.quotes.premium.config.MandatoryConfiguration;
@@ -11,7 +10,6 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.*;
 
@@ -30,27 +28,24 @@ public class PremiumService {
 
     public AmountDivision calculatePremium(final PremiumRequest premiumRequest) throws Exception {
         this.validationService.validatePremiumRequest(premiumRequest);
-        final Map<String,Attribute> confMap = this.mandatoryConfiguration.getConf(premiumRequest.getPolicyType());
+        final Map<String, Attribute> confMap = this.mandatoryConfiguration.getConf(premiumRequest.getPolicyType());
         final List<String> executionKeys = this.mandatoryConfiguration.getExecutionKeys();
         final AmountDivision amountDivision = new AmountDivision();
         this.createInsuredMapping(amountDivision, premiumRequest);
-        for(final String key : executionKeys){
-            PremiumService.log.info("handling execution key : {} ",key);
+        for (final String key : executionKeys) {
+            PremiumService.log.info("Handling execution key: {}", key);
             final Attribute attribute = confMap.get(key);
-            final List<Applicable> applicables = Utils.get(this.mandatoryConfiguration.getFeature(key, premiumRequest.getPolicyType()),amountDivision.getApplicables());
-            final String methodName = "handle" + PremiumService.capitalizeFirstLetter(key);
-            final Method method = this.getClass().getMethod(methodName, AmountDivision.class, PremiumRequest.class, List.class);
+            final List<Applicable> applicables = Utils.get(this.mandatoryConfiguration.getFeature(key, premiumRequest.getPolicyType()), amountDivision.getApplicables());
+            final Method method = this.getClass().getMethod("handle" + PremiumService.capitalizeFirstLetter(key), AmountDivision.class, PremiumRequest.class, List.class);
             method.invoke(this, amountDivision, premiumRequest, applicables);
             amountDivision.getApplicables().forEach(app -> {
                 this.applyRounding(app, attribute, key);
-            });
-
-            amountDivision.getApplicables().forEach(app -> {
                 this.applyMultiplicative(app, attribute, key, "basePremium");
             });
         }
         return amountDivision;
     }
+
 
     public void applyRounding(final Applicable applicable, final Attribute attribute, final String key) {
         try {
@@ -466,12 +461,9 @@ public class PremiumService {
         if(!premiumRequest.isFutureReady()){
             return ;
         }
-
         if(1 < premiumRequest.getInsured().stream().filter(ins -> "adult".equals(ins.getType())).count()){
             return ;
         }
-        final Attribute attribute = this.mandatoryConfiguration.getFeature("futureReady", premiumRequest.getPolicyType());
-
         applicables.forEach(app -> app.setFutureReady(app.getBasePremium()*DynamicConfigurations.getFutureReadyconf(app.getAge())));
     }
 
