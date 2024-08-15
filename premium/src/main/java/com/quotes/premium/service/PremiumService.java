@@ -1,6 +1,7 @@
 package com.quotes.premium.service;
 
 import com.quotes.premium.config.BasePremiumConfig;
+import com.quotes.premium.config.CibilDiscount;
 import com.quotes.premium.config.DynamicConfigurations;
 import com.quotes.premium.config.MandatoryConfiguration;
 import com.quotes.premium.dto.*;
@@ -8,6 +9,7 @@ import com.quotes.premium.operation.OperationRegistry;
 import com.quotes.premium.utils.Utils;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.lang.reflect.Method;
@@ -25,6 +27,22 @@ public class PremiumService {
     private DynamicConfigurations dynamicConfigurations;
     @Autowired
     private MandatoryConfiguration mandatoryConfiguration;
+    @Value("${consumable.cover}")
+    private Double consumableCover;
+    @Value("${bonus.maximizer}")
+    private Double bonusMaximizer;
+    @Value("${early.renewal.discount}")
+    private Double earlyRenewalDiscount;
+    @Value("${health.questionnaire}")
+    private Double healthQuestionnaire;
+    @Value("${nri.discount}")
+    private Double nriDiscount;
+    @Value("${medical.equipment.cover}")
+    private Double medicalEquipmentCover;
+    @Value("${sublimit.moderation}")
+    private Double sublimitModeration;
+    @Value("${preferred.hospital.network}")
+    private Double preferredHospitalNetwork;
 
     public AmountDivision calculatePremium(final PremiumRequest premiumRequest) throws Exception {
         this.validationService.validatePremiumRequest(premiumRequest);
@@ -86,14 +104,13 @@ public class PremiumService {
             return ;
         }
         applicables.forEach(app -> {
-            app.setBonusMaximizer(app.getBonusMaximizer() + app.getBasePremium()*0.20d);
+            app.setBonusMaximizer(app.getBonusMaximizer() + app.getBasePremium()*bonusMaximizer);
         });
     }
 
     public void handleLongTermDiscount(final AmountDivision amountDivision, final PremiumRequest premiumRequest, final List<Applicable> applicables) {
-        final Map<Integer, Double> termMap = Map.of(1,0.0d,2,0.10d,3,0.125d,4,0.150d,5,0.150d);
         applicables.forEach(app -> {
-            app.setLongTermDiscount(app.getLongTermDiscount() + app.getBasePremium()*termMap.get(app.getYear()));
+            app.setLongTermDiscount(app.getLongTermDiscount() + app.getBasePremium()*dynamicConfigurations.getLongTermDiscount(app.getYear()));
         });
     }
 
@@ -103,7 +120,7 @@ public class PremiumService {
         }
 
         final Attribute attribute = this.mandatoryConfiguration.getFeature("earlyRenewal", premiumRequest.getPolicyType());
-        applicables.forEach(app -> app.setEarlyRenewal(app.getEarlyRenewal() + app.getBasePremium()*0.025d));
+        applicables.forEach(app -> app.setEarlyRenewal(app.getEarlyRenewal() + app.getBasePremium()*earlyRenewalDiscount));
     }
 
     public void handleCibilDiscount(final AmountDivision amountDivision, final PremiumRequest premiumRequest, final List<Applicable> applicables) {
@@ -112,20 +129,8 @@ public class PremiumService {
         }
 
         final int cibil = premiumRequest.getCibilScoreRequest().getCibilScore();
-        final Double discount;
-        if(801 <= cibil){
-            discount = 0.075d;
-        }
+        final Double discount = dynamicConfigurations.getCibilDiscount(cibil);
 
-        else if(751 <= cibil){
-            discount = 0.05d;
-        }
-
-        else if(701 <= cibil){
-            discount = 0.025d;
-        } else {
-            discount = 0.0d;
-        }
         final Attribute attribute = this.mandatoryConfiguration.getFeature("cibilDiscount", premiumRequest.getPolicyType());
         applicables.forEach(app -> app.setCibilDiscount(app.getCibilDiscount() + app.getBasePremium()*discount));
     }
@@ -135,7 +140,7 @@ public class PremiumService {
             return ;
         }
         final Attribute attribute = this.mandatoryConfiguration.getFeature("healthQuestionnaire", premiumRequest.getPolicyType());
-        applicables.forEach(app -> app.setHealthQuestionnaire(app.getHealthQuestionnaire() + app.getBasePremium()*0.1d));
+        applicables.forEach(app -> app.setHealthQuestionnaire(app.getHealthQuestionnaire() + app.getBasePremium()*healthQuestionnaire));
     }
 
     public void handlePaCover(final AmountDivision amountDivision, final PremiumRequest premiumRequest, final List<Applicable> applicables) {
@@ -176,7 +181,7 @@ public class PremiumService {
         }
 
         final Attribute attribute = this.mandatoryConfiguration.getFeature("CompassionateVisit", premiumRequest.getPolicyType());
-        final Double expense = "floater".equals(premiumRequest.getPolicyType())? 100.0d : 50.0d;
+        final Double expense = dynamicConfigurations.getCompassionateVisit(premiumRequest.getPolicyType());
         applicables.forEach(app -> app.setCompassionateVisit(app.getCompassionateVisit() + expense));
     }
 
@@ -185,7 +190,7 @@ public class PremiumService {
             return ;
         }
         final Attribute attribute = this.mandatoryConfiguration.getFeature("internationalSecondOpinion", premiumRequest.getPolicyType());
-        final Double expense = "floater".equals(premiumRequest.getPolicyType())? 20.0d : 15.0d;
+        final Double expense = dynamicConfigurations.getInternationalSecondOpinion(premiumRequest.getPolicyType());
         applicables.forEach(app -> app.setInternationalSecondOpinion(app.getInternationalSecondOpinion() + expense));
     }
 
@@ -203,7 +208,7 @@ public class PremiumService {
             return ;
         }
         final Attribute attribute = this.mandatoryConfiguration.getFeature("highEndDiagnostic", premiumRequest.getPolicyType());
-        final Double amount = "floater".equals(premiumRequest.getPolicyType()) ? 1000.0d : 750.0d ;
+        final Double amount = dynamicConfigurations.getHighEndDiagnostic(premiumRequest.getPolicyType());
         applicables.forEach(app -> app.setHighEndDiagnostic(app.getHighEndDiagnostic() + amount));
     }
 
@@ -213,15 +218,9 @@ public class PremiumService {
         }
         final Attribute attribute = this.mandatoryConfiguration.getFeature("womenCare", premiumRequest.getPolicyType());
         final double sumInsured = Double.parseDouble(premiumRequest.getSumInsured());
-        double expense = 0.0d;
-        if(2500000.0d >= sumInsured){
-            expense = 500.0d;
-        }
-        else{
-            expense = 500.0d;
-        }
-        final Double finalExpense = expense;
-        applicables.forEach(app -> app.setWomenCare(app.getWomenCare() + finalExpense));
+        double expense = dynamicConfigurations.getWomenCareExpense(sumInsured);
+
+        applicables.forEach(app -> app.setWomenCare(app.getWomenCare() + expense));
     }
 
     public void handleMaternityExpense(final AmountDivision amountDivision, final PremiumRequest premiumRequest, final List<Applicable> applicables) {
@@ -306,7 +305,7 @@ public class PremiumService {
         }
 
         applicables.forEach(app->{
-            app.setNriDiscount(app.getBasePremium() * 0.05d);
+            app.setNriDiscount(app.getBasePremium() * nriDiscount);
         });
     }
 
@@ -315,26 +314,9 @@ public class PremiumService {
             return ;
         }
         final Attribute attribute = this.mandatoryConfiguration.getFeature("wellnessDiscount", premiumRequest.getPolicyType());
-        
-        final Double discount;
+
         final Double points = premiumRequest.getWellnessDiscount().getPoints();
-        if(751 <= points){
-            discount = 0.20d;
-        }
-
-        else if(601 <= points){
-            discount = 0.14d;
-        }
-
-        else if(351 <= points){
-            discount = 0.10d;
-        }
-
-        else if(200 <= points){
-            discount = 0.04d;
-        } else {
-            discount = 0.0d;
-        }
+        final Double discount = dynamicConfigurations.getWellnessDiscount(points);
 
         applicables.forEach(app->{
             app.setWellnessDiscount(app.getBasePremium() * discount);
@@ -348,7 +330,7 @@ public class PremiumService {
         final Attribute attribute = this.mandatoryConfiguration.getFeature("medicalEquipmentCover", premiumRequest.getPolicyType());
 
         applicables.forEach(app->{
-            app.setMedicalEquipmentCover(app.getBasePremium() * 0.1d);
+            app.setMedicalEquipmentCover(app.getBasePremium() * medicalEquipmentCover);
         });
 
     }
@@ -360,7 +342,7 @@ public class PremiumService {
         final Attribute attribute = this.mandatoryConfiguration.getFeature("subLimitModeration", premiumRequest.getPolicyType());
 
         applicables.forEach(app->{
-            app.setSubLimitModeration(app.getBasePremium() * 0.05d);
+            app.setSubLimitModeration(app.getBasePremium() * sublimitModeration);
         });
 
     }
@@ -372,7 +354,7 @@ public class PremiumService {
         final Attribute attribute = this.mandatoryConfiguration.getFeature("roomRent", premiumRequest.getPolicyType());
         
         final String option =  premiumRequest.getRoomRent().getOption();
-        final double discount = "general".equals(option)?0.20d:("shared".equals(option)?0.10d:0.05d);
+        final double discount = dynamicConfigurations.getRoomRentDiscount(option);
         applicables.forEach(app->{
             app.setRoomRent(app.getBasePremium() * discount);
         });
@@ -407,7 +389,7 @@ public class PremiumService {
         }
         final Attribute attribute = this.mandatoryConfiguration.getFeature("preferredhospitalNetwork", premiumRequest.getPolicyType());
 
-        applicables.forEach(app->app.setPreferredHospitalNetwork(app.getBasePremium()*0.10d));
+        applicables.forEach(app->app.setPreferredHospitalNetwork(app.getBasePremium()*preferredHospitalNetwork));
     }
 
     public void handleInfiniteCare(final AmountDivision amountDivision, final PremiumRequest premiumRequest, final List<Applicable> applicables) {
@@ -473,7 +455,7 @@ public class PremiumService {
         }
         final Attribute attribute = this.mandatoryConfiguration.getFeature("consumableCover", premiumRequest.getPolicyType());
 
-        applicables.forEach(app->app.setConsumableCover(app.getBasePremium()*0.10d));
+        applicables.forEach(app->app.setConsumableCover(app.getBasePremium()*consumableCover));
     }
 
     public void handleInstantCover(final AmountDivision amountDivision, final PremiumRequest premiumRequest, final List<Applicable> applicables) {
@@ -509,7 +491,7 @@ public class PremiumService {
     }
 
     public void handleFloater(final AmountDivision amountDivision, final PremiumRequest premiumRequest, final List<Applicable> applicables) {
-        final double discount = "floater".equals(premiumRequest.getPolicyType()) ? 0.20d : 0.0d;
+        final double discount = dynamicConfigurations.getPolicyTypeDiscount(premiumRequest.getPolicyType());
         applicables.forEach(app -> {
             app.setFloater(app.getFloater() + app.getBasePremium()*discount);
         });
@@ -518,16 +500,7 @@ public class PremiumService {
     public void handleZonalDiscount(final AmountDivision amountDivision, final PremiumRequest premiumRequest, final List<Applicable> applicables) {
         final Attribute attribute = this.mandatoryConfiguration.getFeature("zonalDiscount", premiumRequest.getPolicyType());
         
-        final double discount;
-        if("B".equals(premiumRequest.getZone())){
-            discount = 0.17d;
-        }
-
-        else if("C".equals(premiumRequest.getZone())){
-            discount = 0.30d;
-        } else {
-            discount = 0.0d;
-        }
+        final double discount = dynamicConfigurations.getZonalDiscount(premiumRequest.getZone());
 
         applicables.forEach(app -> {
             app.setZonalDiscount(app.getZonalDiscount() + app.getBasePremium()*discount);
