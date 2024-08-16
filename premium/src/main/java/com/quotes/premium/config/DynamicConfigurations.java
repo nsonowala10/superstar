@@ -5,10 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Configuration
 public class DynamicConfigurations {
@@ -17,6 +14,26 @@ public class DynamicConfigurations {
     private InfiniteCareConf infiniteCareConf;
     @Autowired
     private PowerBoosterConf powerBoosterConf;
+    @Autowired
+    private CibilDiscount cibilDiscount;
+    @Autowired
+    private ZonalDiscount zonalDiscount;
+    @Autowired
+    private RoomRent roomRent;
+    @Autowired
+    private WellnessDiscount wellnessDiscount;
+    @Autowired
+    private WomenCare womenCare;
+    @Autowired
+    private LongTermDiscount longTermDiscount;
+    @Autowired
+    private PolicyTypeDiscount policyTypeDiscount;
+    @Autowired
+    private CompassionateVisit compassionateVisit;
+    @Autowired
+    private InternationalSecondOpinion internationalSecondOpinion;
+    @Autowired
+    private HighEndDiagnostic highEndDiagnostic;
 
     public static final Map<String, Double> voluntaryDeductible = new HashMap<>();
     public static final Map<String, Double> reductionOfPEWaitingPeriod = new HashMap<>();
@@ -26,6 +43,26 @@ public class DynamicConfigurations {
         return this.infiniteCareConf.infiniteCare(amount);
     }
 
+    public Double getCibilDiscount(final Integer cibil) {
+        return this.cibilDiscount.cibilDiscount(cibil);
+    }
+
+    public Double getZonalDiscount(final String zone) {return this.zonalDiscount.getZonalDiscount(zone);}
+
+    public Double getRoomRentDiscount(final String roomType) {return this.roomRent.getRoomRentDiscount(roomType);}
+
+    public Double getWellnessDiscount(final Double wellnessPoint) {return this.wellnessDiscount.getWellnessDiscount(wellnessPoint);}
+
+    public Double getWomenCareExpense(final Double sumInsured) {return this.womenCare.getWomenCareExpense(sumInsured);}
+
+    public Double getLongTermDiscount(final Integer year) {return this.longTermDiscount.getLongTermDiscount(year);}
+
+    public Double getPolicyTypeDiscount(final String policyType) {return this.policyTypeDiscount.getPolicyTypeDiscount(policyType);}
+
+    public Double getCompassionateVisit(final String policyType) {return this.compassionateVisit.getCompassionateVist(policyType);}
+
+    public Double getInternationalSecondOpinion(final String policyType) {return this.internationalSecondOpinion.getInternationSecondOpinion(policyType);}
+    public Double getHighEndDiagnostic(final String policyType) {return this.highEndDiagnostic.getHighEndDiagnostic(policyType);}
     public double getPowerBooster(final String amount){
         return this.powerBoosterConf.powerBooster(amount);
     }
