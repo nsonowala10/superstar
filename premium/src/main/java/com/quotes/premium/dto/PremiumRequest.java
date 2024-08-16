@@ -43,4 +43,6 @@ public class PremiumRequest implements Serializable {
     private CibilScoreRequest cibilScoreRequest;
     private boolean earlyRenewalDiscount;
     private boolean bonusMaximizer;
+    private PaymentTermRequest paymentTermRequest;
+    private boolean isFresh;
 }

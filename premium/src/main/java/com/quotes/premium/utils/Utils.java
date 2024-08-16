@@ -32,8 +32,15 @@ public class Utils {
 
 
     private static List<Applicable> handleYear(final Attribute attribute, final List<Applicable> applicables) {
-        return "inception".equals(attribute.getYear())
-                ? applicables.stream().filter(app -> 1 == app.getYear()).toList()
-                : applicables;
+        if(!"all".equals(attribute.getYear())){
+            final List<String> arr = List.of(attribute.getYear().split(","));
+            return applicables.stream().filter(app -> arr.contains(String.valueOf(app.getYear()))).toList();
+        }
+
+       return applicables;
+    }
+
+    public static String capitalizeFirstLetter(final String str) {
+        return Character.toUpperCase(str.charAt(0)) + str.substring(1);
     }
 }

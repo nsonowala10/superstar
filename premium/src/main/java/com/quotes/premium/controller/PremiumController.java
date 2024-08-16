@@ -23,7 +23,7 @@ public class PremiumController {
        try {
            return ResponseEntity.ok().body(ApiResponse.buildResponse(this.premiumService.calculatePremium(premiumRequest),"success",true));
        } catch (Exception e) {
-           return ResponseEntity.ok().body(ApiResponse.buildResponse(null,e.getMessage(),false));
+           return ResponseEntity.ok().body(ApiResponse.buildResponse(null, String.valueOf(e.toString()),false));
        }
    }
 }

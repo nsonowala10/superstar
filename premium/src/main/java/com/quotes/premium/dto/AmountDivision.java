@@ -17,6 +17,7 @@ import java.util.List;
 public class AmountDivision implements Serializable {
     private List<Applicable> applicables = new ArrayList<>();
     private Double finalPremium = 0.0d;
+    private EmiResponse emiResponse;
 
     public static void main(String[] args) throws JsonProcessingException {
         System.out.println(new ObjectMapper().writeValueAsString(AmountDivision.builder().finalPremium(240030.92)

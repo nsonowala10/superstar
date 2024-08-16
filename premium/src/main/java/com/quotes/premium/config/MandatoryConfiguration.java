@@ -17,18 +17,37 @@ import com.quotes.premium.dto.Attribute;
 @Getter
 public class MandatoryConfiguration {
 
-    @Value("${floater.prerequisite.configurations}")
-    private String floaterConf;
+    @Value("${floater.fresh.prerequisite.configurations}")
+    private String floaterFreshConf;
 
-    @Value("${individual.prerequisite.configurations}")
-    private String individualConf;
+    @Value("${floater.renewal.prerequisite.configurations}")
+    private String floaterRenewalConf;
+
+    @Value("${individual.fresh.prerequisite.configurations}")
+    private String individualFreshConf;
+
+    @Value("${individual.renewal.prerequisite.configurations}")
+    private String individualRenewalConf;
 
     @Value("${execution.keys}")
     private String executionKeys;
 
+    @Value("${validation.keys}")
+    private String validationKeys;
+
+    final private List<String> validationKeysList = new LinkedList<>();
     final private List<String> executionKeysList = new LinkedList<>();
-    private final Map<String, Attribute> floaterMandatoryConf = new HashMap<>();
-    private final Map<String, Attribute> individualMandatoryConf = new HashMap<>();
+    private Map<String, Attribute> floaterFreshMandatoryConf = new HashMap<>();
+    private Map<String, Attribute> individualFreshMandatoryConf = new HashMap<>();
+    private Map<String, Attribute> floaterRenewalMandatoryConf = new HashMap<>();
+    private Map<String, Attribute> individualRenewalMandatoryConf = new HashMap<>();
+
+    public List<String> getValidationKeys(){
+        if(this.validationKeysList.isEmpty()){
+            this.validationKeysList.addAll(Arrays.asList(this.validationKeys.split(",")));
+        }
+        return this.validationKeysList;
+    }
 
     public List<String> getExecutionKeys(){
         if(this.executionKeysList.isEmpty()){
@@ -37,51 +56,55 @@ public class MandatoryConfiguration {
         return this.executionKeysList;
     }
 
-    public Attribute getFeature(final String feature, final String policyType) {
+    public Attribute getFeature(final String feature, final String policyType, boolean fresh) {
         try{
-            if ("individual".equals(policyType) && this.individualMandatoryConf.isEmpty()) {
-                this.prepareConfMap(this.floaterConf, this.individualMandatoryConf);
-            } else if ("floater".equals(policyType) && this.floaterMandatoryConf.isEmpty()) {
-                this.prepareConfMap(this.individualConf, this.floaterMandatoryConf);
+            if ("individual".equals(policyType) && fresh ) {
+                return this.individualFreshMandatoryConf.get(feature);
+            } else if ("floater".equals(policyType) && fresh) {
+                return this.floaterFreshMandatoryConf.get(feature);
+            } else if ("individual".equals(policyType) && !fresh) {
+                return this.individualRenewalMandatoryConf.get(feature);
+            } else if ("floater".equals(policyType) && !fresh) {
+                return this.floaterRenewalMandatoryConf.get(feature);
             }
         }
         catch(final Exception e){
             MandatoryConfiguration.log.error("exception in getting configuration {} for policy type {} ", feature, policyType, e);
         }
-        return this.floaterMandatoryConf.get(feature);
+        return null;
     }
 
 
-    private void prepareConfMap(final String featureConf, final Map<String, Attribute> map) throws JsonProcessingException {
-        if(!map.isEmpty())
-            return ;
-
+    private  Map<String, Attribute> prepareConfMap(final String featureConf) throws JsonProcessingException {
         final ObjectMapper objectMapper = new ObjectMapper();
-        final Map<String, Map<String, Object>> tempMap = objectMapper.readValue(
+        Map<String, Attribute> map = new HashMap<>();
+        map = objectMapper.readValue(
                 featureConf,
-                new TypeReference<Map<String, Map<String, Object>>>() {}
+                new TypeReference<Map<String, Attribute>>() {}
         );
 
-        tempMap.forEach((key, attributesMap) -> {
-            final Attribute attributes = new Attribute(
-                    (String) attributesMap.get("insured"),
-                    (String) attributesMap.get("year"),
-                    (Boolean) attributesMap.get("multiplicative"),
-                    (Boolean) attributesMap.get("rounding"),
-                    (String) attributesMap.get("stage"),
-                    (String) attributesMap.get("expenseType")
-            );
-            map.put(key, attributes);
-        });
+        return map;
     }
 
-    public Map<String, Attribute> getConf(final String policyType) throws JsonProcessingException {
-        if ("floater".equals(policyType)) {
-            this.prepareConfMap(this.floaterConf, this.floaterMandatoryConf);
-            return this.floaterMandatoryConf;
-        } else {
-            this.prepareConfMap(this.individualConf, this.individualMandatoryConf);
-            return this.individualMandatoryConf;
+    public Map<String, Attribute> getConf(final String policyType, boolean fresh) throws JsonProcessingException {
+        if ("floater".equals(policyType) && fresh) {
+            this.floaterFreshMandatoryConf = this.prepareConfMap(this.floaterFreshConf);
+            return this.floaterFreshMandatoryConf;
+        }
+
+        else if("individual".equals(policyType) && fresh) {
+            this.individualFreshMandatoryConf = this.prepareConfMap(this.individualFreshConf);
+            return this.individualFreshMandatoryConf;
+        }
+
+        else if("floater".equals(policyType)) {
+            this.floaterRenewalMandatoryConf = this.prepareConfMap(this.floaterRenewalConf);
+            return this.floaterRenewalMandatoryConf;
+        }
+
+        else  {
+            this.individualRenewalMandatoryConf = this.prepareConfMap(this.individualRenewalConf);
+            return this.individualRenewalMandatoryConf;
         }
     }
 }
