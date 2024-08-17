@@ -9,6 +9,7 @@ import java.util.List;
 
 @Getter
 @Setter
+@ToString
 public class Applicable {
     private Double basePremium = 0.0d;
     private Double lookup = 0.0d;

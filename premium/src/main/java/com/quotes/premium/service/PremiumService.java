@@ -4,6 +4,7 @@ import com.quotes.premium.config.BasePremiumConfig;
 import com.quotes.premium.config.DynamicConfigurations;
 import com.quotes.premium.config.MandatoryConfiguration;
 import com.quotes.premium.dto.*;
+import com.quotes.premium.exception.SuperstarException;
 import com.quotes.premium.operation.OperationRegistry;
 import com.quotes.premium.utils.Utils;
 import lombok.extern.log4j.Log4j2;
@@ -11,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
 
@@ -43,9 +45,21 @@ public class PremiumService {
     @Value("${preferred.hospital.network}")
     private Double preferredHospitalNetwork;
 
-    public AmountDivision calculatePremium(final PremiumRequest premiumRequest) throws Exception {
+    public ApiResponse<AmountDivision> calculatePremium(final PremiumRequest premiumRequest) {
+        try{
+            return ApiResponse.buildResponse(this.calculate(premiumRequest), "success", true);
+        }
+        catch(final InvocationTargetException e){
+            return ApiResponse.buildResponse(null, ((InvocationTargetException) e).getTargetException().toString(), false);
+        }
+        catch(final Exception e){
+            return ApiResponse.buildResponse(null, e.getMessage(), false);
+        }
+    }
+
+    private AmountDivision calculate(final PremiumRequest premiumRequest) throws Exception {
         this.validationService.validatePremiumRequest(premiumRequest, this.mandatoryConfiguration.getValidationKeys());
-        final Map<String, Attribute> confMap = this.mandatoryConfiguration.getConf(premiumRequest.getPolicyType(),premiumRequest.isFresh());
+        final Map<String, Attribute> confMap = this.mandatoryConfiguration.getConf(premiumRequest.getPolicyType(), premiumRequest.isFresh());
         final List<String> executionKeys = this.mandatoryConfiguration.getExecutionKeys();
         final AmountDivision amountDivision = new AmountDivision();
         this.createInsuredMapping(amountDivision, premiumRequest);
@@ -512,16 +526,16 @@ public class PremiumService {
         final String duration = premiumRequest.getPaymentTermRequest().getPaymentDuration();
         if("monthly".equals(duration)){
             amountDivision.setFinalPremium(amountDivision.getFinalPremium() + amountDivision.getFinalPremium()*0.04d);
-            emiAmount = amountDivision.getFinalPremium() / premiumRequest.getPolicyTerm()*12;
+            emiAmount = amountDivision.getFinalPremium() / (premiumRequest.getPolicyTerm()*12);
         }
 
         else if("quarterly".equals(duration)){
             amountDivision.setFinalPremium(amountDivision.getFinalPremium() + amountDivision.getFinalPremium()*0.03d);
-            emiAmount = amountDivision.getFinalPremium() / premiumRequest.getPolicyTerm()*4;
+            emiAmount = amountDivision.getFinalPremium() / (premiumRequest.getPolicyTerm()*4);
         }
 
         else {
-            emiAmount = amountDivision.getFinalPremium() / premiumRequest.getPolicyTerm()*2;
+            emiAmount = amountDivision.getFinalPremium() / (premiumRequest.getPolicyTerm()*2);
         }
 
         amountDivision.setEmiResponse(

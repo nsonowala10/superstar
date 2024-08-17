@@ -37,37 +37,37 @@ public class ValidationService {
 
     public void validatePolicyTerm(final PremiumRequest premiumRequest) {
         if (ValidationService.MIN_POLICY_TERM > premiumRequest.getPolicyTerm() || ValidationService.MAX_POLICY_TERM < premiumRequest.getPolicyTerm()) {
-            throw new RuntimeException("policy term is wrong");
+            throw new SuperstarException("policy term is wrong");
         }
     }
 
     public void validateZone(final PremiumRequest premiumRequest) {
         if (!ValidationService.ALLOWED_ZONES.contains(premiumRequest.getZone())) {
-            throw new RuntimeException("zone is wrong");
+            throw new SuperstarException("zone is wrong");
         }
     }
 
     public void validateInsured(final PremiumRequest premiumRequest) {
         final List<Insured> insured = premiumRequest.getInsured();
         if (null == insured) {
-            throw new RuntimeException("family size is wrong");
+            throw new SuperstarException("family size is wrong");
         }
         final long adultCount = insured.stream().filter(ins -> "adult".equals(ins.getType())).count();
         final long childCount = insured.stream().filter(ins -> "child".equals(ins.getType())).count();
         if (2 < adultCount || 4 < childCount || 0 == adultCount) {
-            throw new RuntimeException("family size is wrong");
+            throw new SuperstarException("family size is wrong");
         }
 
         if(insured.stream().filter(ins -> "adult".equals(ins.getType())).anyMatch(ins -> 18 > ins.getAge())){
-            throw new RuntimeException("adult age can not be less than 18");
+            throw new SuperstarException("adult age can not be less than 18");
         }
 
         if(insured.stream().filter(ins -> "child".equals(ins.getType())).anyMatch(ins -> 25 < ins.getAge())){
-            throw new RuntimeException("child age can not be greater than 25");
+            throw new SuperstarException("child age can not be greater than 25");
         }
 
         if(insured.stream().filter(ins -> "adult".equals(ins.getType())).anyMatch(ins -> 65 < ins.getAge()) && ("10000000".equals(premiumRequest.getSumInsured()) || "UNLIMITED".equals(premiumRequest.getSumInsured()))){
-            throw new RuntimeException("greater than 65 year adult can not opt for sum insured");
+            throw new SuperstarException("greater than 65 year adult can not opt for sum insured");
         }
     }
 
@@ -78,16 +78,16 @@ public class ValidationService {
                && premiumRequest.getPaCoverRequest().isPaCover()
                && (1000000 > sumInsured
                || 100000000 < sumInsured)){
-            throw new RuntimeException("pa cover is not allowed for sum insured chosen");
+            throw new SuperstarException("pa cover is not allowed for sum insured chosen");
         }
     }
 
     public void validatePolicyType(final PremiumRequest premiumRequest) {
         if (!ValidationService.ALLOWED_POLICY_TYPES.contains(premiumRequest.getPolicyType())) {
-            throw new RuntimeException("policy type is wrong");
+            throw new SuperstarException("policy type is wrong");
         }
         if ("floater".equals(premiumRequest.getPolicyType()) && 1 >= (long) premiumRequest.getInsured().size()) {
-            throw new RuntimeException("floater must have more than one insured");
+            throw new SuperstarException("floater must have more than one insured");
         }
     }
 
@@ -96,7 +96,7 @@ public class ValidationService {
                 && premiumRequest.getVoluntarilyDeductible().isDeductible()
                 && null != premiumRequest.getVoluntarilyCopay()
                 && premiumRequest.getVoluntarilyCopay().isCopay()) {
-            throw new RuntimeException("copay and deductible cannot be added together");
+            throw new SuperstarException("copay and deductible cannot be added together");
         }
     }
 
@@ -107,7 +107,7 @@ public class ValidationService {
                     .map(MaternityOptions::getOption)
                     .collect(Collectors.toSet());
             if (selectedOptions.contains("A") && selectedOptions.contains("B")) {
-                throw new RuntimeException("option A & B cannot be selected together");
+                throw new SuperstarException("option A & B cannot be selected together");
             }
         }
     }
@@ -117,7 +117,7 @@ public class ValidationService {
                 && premiumRequest.getPaymentTermRequest().isEmi()
                 && 3 < premiumRequest.getPolicyTerm()) {
 
-                throw new RuntimeException("emi is not available for greater than 3 years");
+                throw new SuperstarException("emi is not available for greater than 3 years");
         }
     }
 

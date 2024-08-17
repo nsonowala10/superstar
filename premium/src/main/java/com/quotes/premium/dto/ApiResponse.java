@@ -9,6 +9,7 @@ import java.util.Optional;
 @Setter
 @Builder
 @JsonInclude(JsonInclude.Include.NON_ABSENT)
+@ToString
 public class ApiResponse<T>{
     private boolean success;
     private String message;
