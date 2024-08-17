@@ -6,6 +6,7 @@ import lombok.ToString;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @Getter
 @Setter
@@ -53,6 +54,8 @@ public class Applicable {
     private boolean nri;
     private boolean proposer;
     private Double reflexLoadingPercentage = 0.0d;
+    private Map<String, ReflexQuestionAndAnswer> diseaseQuestionsAndAnswers;
+    private ReflexLoading reflexLoading1;
 
     public void handleStageIIPremium() {
         this.basePremium =

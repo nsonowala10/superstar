@@ -16,6 +16,8 @@ public class Insured {
     private boolean nri;
     private boolean proposer;
     private Double reflexLoading = 0.0d;
+    // key: disease,value: Map of questions to answers
+    private Map<String, ReflexQuestionAndAnswer> diseaseQuestionsAndAnswers;
 
     private final static Set<String> masterDisease = new HashSet<String>(Arrays.asList("BP","DM","CAD","Asthma","Hyperlipedimia"));
 
