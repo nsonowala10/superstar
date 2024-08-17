@@ -1,7 +1,6 @@
 package com.quotes.premium.service;
 
 import com.quotes.premium.config.BasePremiumConfig;
-import com.quotes.premium.config.CibilDiscount;
 import com.quotes.premium.config.DynamicConfigurations;
 import com.quotes.premium.config.MandatoryConfiguration;
 import com.quotes.premium.dto.*;
@@ -176,7 +175,7 @@ public class PremiumService {
             return ;
         }
 
-        final Double expense = dynamicConfigurations.getCompassionateVisit(premiumRequest.getPolicyType());
+        final Double expense = this.dynamicConfigurations.getCompassionateVisit(premiumRequest.getPolicyType());
         applicables.forEach(app -> app.setCompassionateVisit(app.getCompassionateVisit() + expense));
     }
 
@@ -184,7 +183,7 @@ public class PremiumService {
         if(!premiumRequest.isInternationalSecondOpinion()){
             return ;
         }
-        final Double expense = dynamicConfigurations.getInternationalSecondOpinion(premiumRequest.getPolicyType());
+        final Double expense = this.dynamicConfigurations.getInternationalSecondOpinion(premiumRequest.getPolicyType());
         applicables.forEach(app -> app.setInternationalSecondOpinion(app.getInternationalSecondOpinion() + expense));
     }
 
@@ -200,7 +199,7 @@ public class PremiumService {
         if(!premiumRequest.isHighEndDiagnostic()){
             return ;
         }
-        final Double amount = dynamicConfigurations.getHighEndDiagnostic(premiumRequest.getPolicyType());
+        final Double amount = this.dynamicConfigurations.getHighEndDiagnostic(premiumRequest.getPolicyType());
         applicables.forEach(app -> app.setHighEndDiagnostic(app.getHighEndDiagnostic() + amount));
     }
 
@@ -209,7 +208,7 @@ public class PremiumService {
             return ;
         }
         final double sumInsured = Double.parseDouble(premiumRequest.getSumInsured());
-        double expense = dynamicConfigurations.getWomenCareExpense(sumInsured);
+        final double expense = this.dynamicConfigurations.getWomenCareExpense(sumInsured);
 
         applicables.forEach(app -> app.setWomenCare(app.getWomenCare() + expense));
     }
@@ -293,7 +292,7 @@ public class PremiumService {
         }
 
         applicables.forEach(app->{
-            app.setNriDiscount(app.getBasePremium() * nriDiscount);
+            app.setNriDiscount(app.getBasePremium() * this.nriDiscount);
         });
     }
 
@@ -303,7 +302,7 @@ public class PremiumService {
         }
 
         final Double points = premiumRequest.getWellnessDiscount().getPoints();
-        final Double discount = dynamicConfigurations.getWellnessDiscount(points);
+        final Double discount = this.dynamicConfigurations.getWellnessDiscount(points);
 
         applicables.forEach(app->{
             app.setWellnessDiscount(app.getBasePremium() * discount);
@@ -316,7 +315,7 @@ public class PremiumService {
         }
 
         applicables.forEach(app->{
-            app.setMedicalEquipmentCover(app.getBasePremium() * medicalEquipmentCover);
+            app.setMedicalEquipmentCover(app.getBasePremium() * this.medicalEquipmentCover);
         });
 
     }
@@ -326,7 +325,7 @@ public class PremiumService {
             return ;
         }
         applicables.forEach(app->{
-            app.setSubLimitModeration(app.getBasePremium() * sublimitModeration);
+            app.setSubLimitModeration(app.getBasePremium() * this.sublimitModeration);
         });
 
     }
@@ -336,7 +335,7 @@ public class PremiumService {
             return ;
         }
         final String option =  premiumRequest.getRoomRent().getOption();
-        final double discount = dynamicConfigurations.getRoomRentDiscount(option);
+        final double discount = this.dynamicConfigurations.getRoomRentDiscount(option);
         applicables.forEach(app->{
             app.setRoomRent(app.getBasePremium() * discount);
         });
@@ -366,7 +365,7 @@ public class PremiumService {
             return ;
         }
 
-        applicables.forEach(app->app.setPreferredHospitalNetwork(app.getBasePremium()*preferredHospitalNetwork));
+        applicables.forEach(app->app.setPreferredHospitalNetwork(app.getBasePremium()* this.preferredHospitalNetwork));
     }
 
     public void handleInfiniteCare(final AmountDivision amountDivision, final PremiumRequest premiumRequest, final List<Applicable> applicables) {
@@ -428,7 +427,7 @@ public class PremiumService {
             return;
         }
 
-        applicables.forEach(app->app.setConsumableCover(app.getBasePremium()*consumableCover));
+        applicables.forEach(app->app.setConsumableCover(app.getBasePremium()* this.consumableCover));
     }
 
     public void handleInstantCover(final AmountDivision amountDivision, final PremiumRequest premiumRequest, final List<Applicable> applicables) {
@@ -456,12 +455,11 @@ public class PremiumService {
     }
 
     public void handleReflexLoading(final AmountDivision amountDivision, final PremiumRequest premiumRequest, final List<Applicable> applicables) {
-
         applicables.forEach(app -> app.setReflexLoading(app.getReflexLoading() + app.getBasePremium()*app.getReflexLoadingPercentage()));
     }
 
     public void handleFloater(final AmountDivision amountDivision, final PremiumRequest premiumRequest, final List<Applicable> applicables) {
-        final double discount = dynamicConfigurations.getPolicyTypeDiscount(premiumRequest.getPolicyType());
+        final double discount = this.dynamicConfigurations.getPolicyTypeDiscount(premiumRequest.getPolicyType());
         applicables.forEach(app -> {
             app.setFloater(app.getFloater() + app.getBasePremium()*discount);
         });
@@ -477,7 +475,6 @@ public class PremiumService {
     }
 
     public void handleLookup(final AmountDivision amountDivision, final PremiumRequest premiumRequest, final List<Applicable> applicables) {
-
         applicables.stream().filter(applicable -> 50 >= applicable.getYear()).forEach(applicable -> applicable.setLookup(this.premiumConfig.getPremium(applicable.getAge(), applicable.getType(), premiumRequest.getSumInsured())));
         applicables.stream().filter(applicable -> 50 < applicable.getYear()).forEach(applicable -> applicable.setLookup(this.premiumConfig.getPremium(applicable.getAge() + applicable.getYear() - 1, applicable.getType(), premiumRequest.getSumInsured())));
     }
@@ -501,7 +498,6 @@ public class PremiumService {
         });
 
         amountDivision.setFinalPremium(finalPremium[0]);
-
         if(null == premiumRequest.getPaymentTermRequest() || !premiumRequest.getPaymentTermRequest().isEmi()){
             return ;
         }

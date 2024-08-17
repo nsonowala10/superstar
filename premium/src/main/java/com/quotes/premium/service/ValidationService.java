@@ -1,6 +1,7 @@
 package com.quotes.premium.service;
 
 import com.quotes.premium.dto.*;
+import com.quotes.premium.exception.SuperstarException;
 import com.quotes.premium.utils.Utils;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
@@ -30,7 +31,7 @@ public class ValidationService {
 
     public void validateSumInsured(final PremiumRequest premiumRequest) {
         if (!ValidationService.ALLOWED_SUM_INSURED.contains(premiumRequest.getSumInsured())) {
-            throw new RuntimeException("sum insured is wrong");
+            throw new SuperstarException("sum insured is wrong");
         }
     }
 
